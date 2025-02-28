@@ -171,4 +171,26 @@ public class ParseDatabase {
             e.printStackTrace();
         }
     }
+    public static void removeEmployee(Scanner scanner) {
+        System.out.print("Enter the ID of the employee to remove: ");
+        int id = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        String deleteSQL = "DELETE FROM employees WHERE id = ?";
+
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement pstmt = connection.prepareStatement(deleteSQL)) {
+
+            pstmt.setInt(1, id);
+            int rowsAffected = pstmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Employee with ID " + id + " removed successfully.");
+            } else {
+                System.out.println("No employee found with the given ID.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

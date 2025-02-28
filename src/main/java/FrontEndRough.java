@@ -16,7 +16,8 @@ public class FrontEndRough {
             System.out.println("1. View Employees");
             System.out.println("2. Add Employee");
             System.out.println("3. Edit Employee");
-            System.out.println("4. Exit");
+            System.out.println("4. Remove Employee");
+            System.out.println("5. Exit");
             System.out.print("Please choose an option: ");
 
             int choice = scanner.nextInt();
@@ -56,6 +57,9 @@ public class FrontEndRough {
                     ParseDatabase.editEmployee(scanner, idChoice);
                     break;
                 case 4:
+                    ParseDatabase.removeEmployee(scanner);
+                    break;
+                case 5:
                     System.out.println("Goodbye!");
                     scanner.close();
                     System.exit(0);
