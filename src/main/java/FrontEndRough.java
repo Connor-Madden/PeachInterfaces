@@ -2,69 +2,105 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-
 public class FrontEndRough {
     public static void main(String[] args) {
-        // Initialize database (create table and insert default values)
         ParseDatabase.initializeDatabase();
-
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            // Display the menu options
-            System.out.println("\n=== Employee Catalog Menu ===");
-            System.out.println("1. View Employees");
-            System.out.println("2. Add Employee");
-            System.out.println("3. Edit Employee");
-            System.out.println("4. Remove Employee");
+            System.out.println("\n=== Clothing Catalog Menu ===");
+            System.out.println("1. View Clothing Items");
+            System.out.println("2. Add Clothing Item");
+            System.out.println("3. Edit Clothing Item");
+            System.out.println("4. Remove Clothing Item");
             System.out.println("5. Exit");
             System.out.print("Please choose an option: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
-                    // View Employees
-                    List<Map<String, Object>> employees = ParseDatabase.getEmployees();
-                    if (employees.isEmpty()) {
-                        System.out.println("No employees found.");
+                    // View Clothing Items
+                    List<Map<String, Object>> clothingItems = ParseDatabase.getClothingItems();
+                    if (clothingItems.isEmpty()) {
+                        System.out.println("No clothing items found.");
                     } else {
-                        for (Map<String, Object> employee : employees) {
-                            // Extract fields for formatted output
-                            int id = (int) employee.get("id");
-                            String lastName = (String) employee.get("last_name");
-                            String firstName = (String) employee.get("first_name");
-                            System.out.println(id + " | " + lastName + ", " + firstName);
+                        // Display items with their actual IDs
+                        for (Map<String, Object> item : clothingItems) {
+                            int id = (int) item.get("id");
+                            String name = (String) item.get("name");
+                            String color = (String) item.get("colour");
+                            System.out.println(id + " | " + name + " | " + color);
                         }
 
-                        System.out.print("Enter the index of the employee you'd like to view the full details of: ");
-                        int idPicked = scanner.nextInt()-1;
-                        System.out.println(employees.get(idPicked));
+                        // Prompt for ID to view details
+                        System.out.print("Enter the ID of the item to view details: ");
+                        int idPicked = scanner.nextInt();
+                        scanner.nextLine();
 
+                        // Find item by ID
+                        boolean found = false;
+                        for (Map<String, Object> item : clothingItems) {
+                            if ((int) item.get("id") == idPicked) {
+                                System.out.println(item);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            System.out.println("No item found with ID: " + idPicked);
+                        }
                     }
                     break;
 
                 case 2:
-                    // Add Employee
-                    ParseDatabase.addEmployee(scanner);
+                    // Add Clothing Item
+                    ParseDatabase.addClothingItem(scanner);
                     break;
 
                 case 3:
-                    // Exit the program
-                    System.out.print("Enter id of employee to edit: ");
-                    int idChoice = scanner.nextInt();
-                    ParseDatabase.editEmployee(scanner, idChoice);
+                    // Edit Clothing Item
+                    List<Map<String, Object>> editItems = ParseDatabase.getClothingItems();
+                    if (editItems.isEmpty()) {
+                        System.out.println("No items to edit.");
+                        break;
+                    }
+                    // Display items with IDs
+                    for (Map<String, Object> item : editItems) {
+                        System.out.println(item.get("id") + " | " + item.get("name") + " | " + item.get("colour"));
+                    }
+                    System.out.print("Enter the ID of the item to edit: ");
+                    int editId = scanner.nextInt();
+                    scanner.nextLine();
+                    ParseDatabase.editClothingItem(scanner, editId);
                     break;
+
                 case 4:
-                    ParseDatabase.removeEmployee(scanner);
+                    // Remove Clothing Item
+                    List<Map<String, Object>> removeItems = ParseDatabase.getClothingItems();
+                    if (removeItems.isEmpty()) {
+                        System.out.println("No items to remove.");
+                        break;
+                    }
+                    // Display items with IDs
+                    for (Map<String, Object> item : removeItems) {
+                        System.out.println(item.get("id") + " | " + item.get("name") + " | " + item.get("colour"));
+                    }
+                    System.out.print("Enter the ID of the item to remove: ");
+                    int removeId = scanner.nextInt();
+                    scanner.nextLine();
+                    ParseDatabase.removeClothingItem(removeId);
                     break;
+
                 case 5:
                     System.out.println("Goodbye!");
                     scanner.close();
                     System.exit(0);
+                    break;
+
                 default:
-                    System.out.println("Invalid option. Please try again.");
+                    System.out.println("Invalid option.");
             }
         }
     }

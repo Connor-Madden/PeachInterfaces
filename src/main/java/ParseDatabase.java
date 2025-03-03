@@ -1,42 +1,58 @@
 import java.sql.*;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class ParseDatabase {
-    private static final String URL = "jdbc:sqlite:mydatabase.db"; // Path to your SQLite database
+    private static final String URL = "jdbc:sqlite:fashionDb.db";
 
-    // Method to initialize the database (create table and insert data if necessary)
     public static void initializeDatabase() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS employees ("
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS ClothingItems ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "first_name TEXT, "
-                + "last_name TEXT, "
-                + "email TEXT, "
-                + "hire_date TEXT"
-                + ");";
+                + "name TEXT UNIQUE, "
+                + "colour TEXT, "
+                + "itemType TEXT, "
+                + "size TEXT, "
+                + "description TEXT);";
 
-        String insertDataSQL1 = "INSERT INTO employees (first_name, last_name, email, hire_date) "
-                + "VALUES ('John', 'Doe', 'john.doe@example.com', '2021-05-01');";
-        String insertDataSQL2 = "INSERT INTO employees (first_name, last_name, email, hire_date) "
-                + "VALUES ('Jane', 'Doe', 'jane.doe@example.com', '2022-06-15');";
+        String checkForDuplicatesSQL = "SELECT COUNT(*) FROM ClothingItems WHERE name = ?";
+        String insertDataSQL = "INSERT INTO ClothingItems (id, name, colour, itemType, size, description) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        String resetAutoIncrementSQL = "DELETE FROM sqlite_sequence WHERE name = 'ClothingItems';";
+        String checkIfTableIsEmptySQL = "SELECT COUNT(*) FROM ClothingItems;";
 
         try (Connection connection = DriverManager.getConnection(URL);
              Statement statement = connection.createStatement()) {
 
+            // Create table if it doesn't exist
             statement.executeUpdate(createTableSQL);
             System.out.println("Table created (if it didn't exist).");
 
-            String checkForDuplicatesSQL = "SELECT COUNT(*) FROM employees WHERE id=1";
-            ResultSet resultSet = statement.executeQuery(checkForDuplicatesSQL);
-            if (resultSet.getInt(1) == 0) {
-                statement.executeUpdate(insertDataSQL1);
-                System.out.println("John Doe inserted.");
+            // Check if the table is empty
+            ResultSet rs = statement.executeQuery(checkIfTableIsEmptySQL);
+            if (rs.next() && rs.getInt(1) == 0) {
+                // Reset the autoincrement value if the table is empty
+                statement.executeUpdate(resetAutoIncrementSQL);
+                System.out.println("Autoincrement reset for empty table.");
             }
 
-            resultSet = statement.executeQuery("SELECT COUNT(*) FROM employees WHERE id=2");
-            if (resultSet.getInt(1) == 0) {
-                statement.executeUpdate(insertDataSQL2);
-                System.out.println("Jane Doe inserted.");
+            // Check if the Gucci dress exists
+            try (PreparedStatement pstmt = connection.prepareStatement(checkForDuplicatesSQL)) {
+                pstmt.setString(1, "Gucci Denim Mini Dress with Horsebit");
+                ResultSet resultSet = pstmt.executeQuery();
+
+                if (resultSet.next() && resultSet.getInt(1) == 0) {
+                    // Insert the Gucci dress since it doesn't exist
+                    try (PreparedStatement insertStmt = connection.prepareStatement(insertDataSQL)) {
+                        insertStmt.setInt(1, 1); // Assign ID 1 explicitly
+                        insertStmt.setString(2, "Gucci Denim Mini Dress with Horsebit");
+                        insertStmt.setString(3, "Blue");
+                        insertStmt.setString(4, "Dress");
+                        insertStmt.setString(5, "M");
+                        insertStmt.setString(6, "Denim mini dress with a detachable leather belt featuring silver-toned Horsebit hardware.");
+                        insertStmt.executeUpdate();
+                        System.out.println("Sample clothing item inserted with ID: 1");
+                    }
+                }
             }
 
         } catch (SQLException e) {
@@ -44,10 +60,10 @@ public class ParseDatabase {
         }
     }
 
-    // Method to fetch employees from the database
-    public static List<Map<String, Object>> getEmployees() {
-        List<Map<String, Object>> employeesList = new ArrayList<>();
-        String selectQuery = "SELECT * FROM employees;";
+
+    public static List<Map<String, Object>> getClothingItems() {
+        List<Map<String, Object>> clothingList = new ArrayList<>();
+        String selectQuery = "SELECT * FROM ClothingItems;";
 
         try (Connection connection = DriverManager.getConnection(URL);
              Statement statement = connection.createStatement();
@@ -59,138 +75,112 @@ public class ParseDatabase {
             while (resultSet.next()) {
                 Map<String, Object> rowMap = new HashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    String columnName = metaData.getColumnName(i);
-                    Object columnValue = resultSet.getObject(i);
-                    rowMap.put(columnName, columnValue);
+                    rowMap.put(metaData.getColumnName(i), resultSet.getObject(i));
                 }
-                employeesList.add(rowMap);
+                clothingList.add(rowMap);
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return employeesList;
+        return clothingList;
     }
 
-    // Method to validate names using regex
-    private static boolean isValidName(String name) {
-        String nameRegex = "^[A-Za-z][A-Za-z\\s\\-]{1,}$";
-        return Pattern.matches(nameRegex, name);
-    }
-
-    // Method to add a new employee to the database
-    public static void addEmployee(Scanner scanner) {
-        String insertSQL = "INSERT INTO employees (first_name, last_name, email, hire_date) VALUES (?, ?, ?, ?)";
+    public static void addClothingItem(Scanner scanner) {
+        String insertSQL = "INSERT INTO ClothingItems (name, colour, itemType, size, description) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement pstmt = connection.prepareStatement(insertSQL)) {
 
-            String firstName, lastName, email, hireDate;
+            System.out.print("Enter item name: ");
+            String name = scanner.nextLine().trim();
 
-            do {
-                System.out.print("Enter first name: ");
-                firstName = scanner.nextLine().trim();
-                if (!isValidName(firstName)) {
-                    System.out.println("Invalid first name. Please try again.");
-                }
-            } while (!isValidName(firstName));
+            System.out.print("Enter item color: ");
+            String color = scanner.nextLine().trim();
 
-            do {
-                System.out.print("Enter last name: ");
-                lastName = scanner.nextLine().trim();
-                if (!isValidName(lastName)) {
-                    System.out.println("Invalid last name. Please try again.");
-                }
-            } while (!isValidName(lastName));
+            System.out.print("Enter item type: ");
+            String type = scanner.nextLine().trim();
 
-            System.out.print("Enter email: ");
-            email = scanner.nextLine();
+            System.out.print("Enter item size: ");
+            String size = scanner.nextLine().trim();
 
-            System.out.print("Enter hire date (YYYY-MM-DD): ");
-            hireDate = scanner.nextLine();
+            System.out.print("Enter item description: ");
+            String description = scanner.nextLine().trim();
 
-            pstmt.setString(1, firstName);
-            pstmt.setString(2, lastName);
-            pstmt.setString(3, email);
-            pstmt.setString(4, hireDate);
+            pstmt.setString(1, name);
+            pstmt.setString(2, color);
+            pstmt.setString(3, type);
+            pstmt.setString(4, size);
+            pstmt.setString(5, description);
             pstmt.executeUpdate();
-            System.out.println("Employee added successfully!");
+            System.out.println("Clothing item added successfully!");
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Method to edit an employee in the database
-    public static void editEmployee(Scanner scanner, int id) {
-        System.out.println("Editing employee with ID: " + id);
-        scanner.nextLine(); // Consume newline
-        String updateSQL = "UPDATE employees SET first_name = ?, last_name = ?, email = ?, hire_date = ? WHERE id = ?";
+    public static void editClothingItem(Scanner scanner, int id) {
+        String updateSQL = "UPDATE ClothingItems SET name = ?, colour = ?, itemType = ?, size = ?, description = ? WHERE id = ?";
 
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement pstmt = connection.prepareStatement(updateSQL)) {
+            scanner.nextLine();
 
-            String firstName, lastName, email, hireDate;
+            System.out.print("Enter new item name: ");
+            String name = scanner.nextLine().trim();
 
-            do {
-                System.out.print("Enter first name: ");
-                firstName = scanner.nextLine().trim();
-                if (!isValidName(firstName)) {
-                    System.out.println("Invalid first name. Please try again.");
-                }
-            } while (!isValidName(firstName));
+            System.out.print("Enter new item color: ");
+            String color = scanner.nextLine().trim();
 
-            do {
-                System.out.print("Enter last name: ");
-                lastName = scanner.nextLine().trim();
-                if (!isValidName(lastName)) {
-                    System.out.println("Invalid last name. Please try again.");
-                }
-            } while (!isValidName(lastName));
+            System.out.print("Enter new item type: ");
+            String type = scanner.nextLine().trim();
 
-            System.out.print("Enter email: ");
-            email = scanner.nextLine();
+            System.out.print("Enter new item size: ");
+            String size = scanner.nextLine().trim();
 
-            System.out.print("Enter hire date (YYYY-MM-DD): ");
-            hireDate = scanner.nextLine();
+            System.out.print("Enter new item description: ");
+            String description = scanner.nextLine().trim();
 
-            pstmt.setString(1, firstName);
-            pstmt.setString(2, lastName);
-            pstmt.setString(3, email);
-            pstmt.setString(4, hireDate);
-            pstmt.setInt(5, id);
+            pstmt.setString(1, name);
+            pstmt.setString(2, color);
+            pstmt.setString(3, type);
+            pstmt.setString(4, size);
+            pstmt.setString(5, description);
+            pstmt.setInt(6, id);
 
             int rowsAffected = pstmt.executeUpdate();
+            System.out.println(rowsAffected > 0 ? "Clothing item updated successfully!" : "No item found with the given ID.");
 
-            if (rowsAffected > 0) {
-                System.out.println("Employee updated successfully!");
-            } else {
-                System.out.println("No employee found with the given ID.");
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    public static void removeEmployee(Scanner scanner) {
-        System.out.print("Enter the ID of the employee to remove: ");
-        int id = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
 
-        String deleteSQL = "DELETE FROM employees WHERE id = ?";
+    public static void removeClothingItem(int id) {
+        String checkSQL = "SELECT COUNT(*) FROM ClothingItems WHERE id = ?";
+        String deleteSQL = "DELETE FROM ClothingItems WHERE id = ?";
 
         try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = connection.prepareStatement(deleteSQL)) {
+             PreparedStatement checkStmt = connection.prepareStatement(checkSQL);
+             PreparedStatement deleteStmt = connection.prepareStatement(deleteSQL)) {
 
-            pstmt.setInt(1, id);
-            int rowsAffected = pstmt.executeUpdate();
-
-            if (rowsAffected > 0) {
-                System.out.println("Employee with ID " + id + " removed successfully.");
+            // Check if ID exists
+            checkStmt.setInt(1, id);
+            ResultSet resultSet = checkStmt.executeQuery();
+            if (resultSet.next() && resultSet.getInt(1) > 0) {
+                // Delete the item
+                deleteStmt.setInt(1, id);
+                int rowsAffected = deleteStmt.executeUpdate();
+                System.out.println(rowsAffected > 0 ? "Clothing item removed successfully." : "Failed to remove item.");
             } else {
-                System.out.println("No employee found with the given ID.");
+                System.out.println("No item found with ID: " + id);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("Error removing item.");
         }
     }
+
+
 }
