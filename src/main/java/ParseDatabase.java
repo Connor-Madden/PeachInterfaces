@@ -35,7 +35,7 @@ public class ParseDatabase {
     } catch (SQLException error) {
       error.printStackTrace();
       System.out.println(
-          "Error: a SQL error has occured. (initializeDatabase)");
+          "Error: a SQLException has occured. (initializeDatabase)");
     }
   }
 
@@ -60,7 +60,8 @@ public class ParseDatabase {
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println("Error: a SQL error has occured. (getClothingItems)");
+      System.out.println(
+          "Error: a SQLException has occured. (getClothingItems)");
     }
     return clothingList;
   }
@@ -97,7 +98,8 @@ public class ParseDatabase {
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println("Error: a SQL error has occured. (addClothingItem)");
+      System.out.println(
+          "Error: a SQLException has occured. (addClothingItem)");
     }
   }
 
@@ -138,7 +140,8 @@ public class ParseDatabase {
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println("Error: a SQL error has occured. (editClothingItem)");
+      System.out.println(
+          "Error: a SQLException has occured. (editClothingItem)");
     }
   }
 
@@ -168,7 +171,7 @@ public class ParseDatabase {
       error.printStackTrace();
       System.out.println("Error: error removing item");
       System.out.println(
-          "Error: a SQL error has occured. (removeClothingItem)");
+          "Error: a SQLException has occured. (removeClothingItem)");
     }
   }
 
@@ -226,7 +229,7 @@ public class ParseDatabase {
       }
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println("Error: a SQL error has occured. (addGucciDress)");
+      System.out.println("Error: a SQLException has occured. (addGucciDress)");
     }
   }
 }
