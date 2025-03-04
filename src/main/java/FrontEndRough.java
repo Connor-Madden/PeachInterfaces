@@ -5,7 +5,7 @@ import java.util.Scanner;
 public class FrontEndRough {
   public static void main(String[] args) {
     ParseDatabase.initializeDatabase();
-    ParseDatabase.addGucciDress();
+    ParseDatabase.addGucciDress(); // NOTE: no longer included in initializeDatabase()
     Scanner scanner = new Scanner(System.in);
 
     while (true) {
@@ -59,9 +59,8 @@ public class FrontEndRough {
       case 2:
         // Add Clothing Item
         // FIX: ParseDatabase.addClothingItem(scanner);
-        // functionality of addClothingItem has changed to take
-        // Map<String,String> without id parameter
-        // pass it Hashmap<String,String>
+        // functionality changed to:
+        // addClothingItem(Hashmap<String,String> hmap), without the id parameter
         break;
 
       case 3:
@@ -79,7 +78,9 @@ public class FrontEndRough {
         System.out.print("Enter the ID of the item to edit: ");
         int editId = scanner.nextInt();
         scanner.nextLine();
-        ParseDatabase.editClothingItem(scanner, editId);
+        // FIX: ParseDatabase.editClothingItem(scanner, editId);
+        // functionality changed to:
+        // editClothingItem(int id, Hashmap<String,String> hmap)
         break;
 
       case 4:

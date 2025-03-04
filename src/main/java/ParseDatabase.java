@@ -7,7 +7,7 @@ public class ParseDatabase {
   public static void initializeDatabase() {
     String createTableSQL = "CREATE TABLE IF NOT EXISTS ClothingItems ("
                             + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                            + "name TEXT, "
+                            + "name TEXT, " // no longer unique: ask Adrian
                             + "colour TEXT, "
                             + "itemType TEXT, "
                             + "size TEXT, "
@@ -92,36 +92,22 @@ public class ParseDatabase {
     }
   }
 
-  public static void editClothingItem(Scanner scanner, int id) {
+  // edits a new piece of clothing in the database
+  // ADMIN FUNCTION
+  public static void editClothingItem(int id,
+                                      Map<String, String> updatedClothing) {
     String updateSQL = "UPDATE ClothingItems SET name = ?, colour = ?, "
                        + "itemType = ?, size = ?, description = ? WHERE id = ?";
 
     try (Connection connection = DriverManager.getConnection(URL);
          PreparedStatement pstmt = connection.prepareStatement(updateSQL)) {
-      scanner.nextLine();
 
-      System.out.print("Enter new item name: ");
-      String name = scanner.nextLine().trim();
-
-      System.out.print("Enter new item color: ");
-      String color = scanner.nextLine().trim();
-
-      System.out.print("Enter new item type: ");
-      String type = scanner.nextLine().trim();
-
-      System.out.print("Enter new item size: ");
-      String size = scanner.nextLine().trim();
-
-      System.out.print("Enter new item description: ");
-      String description = scanner.nextLine().trim();
-
-      pstmt.setString(1, name);
-      pstmt.setString(2, color);
-      pstmt.setString(3, type);
-      pstmt.setString(4, size);
-      pstmt.setString(5, description);
+      pstmt.setString(1, updatedClothing.get("name"));
+      pstmt.setString(2, updatedClothing.get("colour"));
+      pstmt.setString(3, updatedClothing.get("itemType"));
+      pstmt.setString(4, updatedClothing.get("size"));
+      pstmt.setString(5, updatedClothing.get("description"));
       pstmt.setInt(6, id);
-
       int rowsAffected = pstmt.executeUpdate();
       System.out.println(rowsAffected > 0
                              ? "Clothing item updated successfully!"

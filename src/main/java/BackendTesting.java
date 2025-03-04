@@ -10,6 +10,7 @@ public class BackendTesting {
     ParseDatabase.printItems();
     System.out.println();
     System.out.println();
+
     Map<String, String> entry = new HashMap<>();
     entry.put("colour", "red");
     entry.put("name", "gucci shorts with leather");
@@ -18,6 +19,19 @@ public class BackendTesting {
     entry.put("description", "there gucci shorts!");
     ParseDatabase.addClothingItem(entry);
     ParseDatabase.printItems();
+    System.out.println();
+    System.out.println();
+
+    entry.put("colour", "blue");
+    entry.put("name", "gucci shorts with leather");
+    entry.put("itemType", "shorts");
+    entry.put("size", "M"); // change size to medium
+    entry.put("description", "there gucci shorts!");
+    int id = 2; // 2 with empty database
+    ParseDatabase.editClothingItem(id, entry);
+    ParseDatabase.printItems();
+    System.out.println();
+    System.out.println();
 
     /*
     String id1 = String.valueOf(module.generateID());
