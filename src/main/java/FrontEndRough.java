@@ -5,6 +5,7 @@ import java.util.Scanner;
 public class FrontEndRough {
     public static void main(String[] args) {
         ParseDatabase.initializeDatabase();
+        ParseDatabase.addGucciDress();
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
