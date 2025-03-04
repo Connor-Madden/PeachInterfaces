@@ -7,7 +7,7 @@ public class ParseDatabase {
   public static void initializeDatabase() {
     String createTableSQL = "CREATE TABLE IF NOT EXISTS ClothingItems ("
                             + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                            + "name TEXT UNIQUE, "
+                            + "name TEXT, "
                             + "colour TEXT, "
                             + "itemType TEXT, "
                             + "size TEXT, "
@@ -66,33 +66,22 @@ public class ParseDatabase {
     return clothingList;
   }
 
-  public static void addClothingItem(Scanner scanner) {
+  // add a new piece of clothing to the database
+  // ADMIN FUNCTION
+  public static void addClothingItem(Map<String, String> newClothing) {
+    // TODO: validate entered data before adding to database
+
     String insertSQL = "INSERT INTO ClothingItems (name, colour, itemType, "
                        + "size, description) VALUES (?, ?, ?, ?, ?)";
 
     try (Connection connection = DriverManager.getConnection(URL);
          PreparedStatement pstmt = connection.prepareStatement(insertSQL)) {
 
-      System.out.print("Enter item name: ");
-      String name = scanner.nextLine().trim();
-
-      System.out.print("Enter item color: ");
-      String color = scanner.nextLine().trim();
-
-      System.out.print("Enter item type: ");
-      String type = scanner.nextLine().trim();
-
-      System.out.print("Enter item size: ");
-      String size = scanner.nextLine().trim();
-
-      System.out.print("Enter item description: ");
-      String description = scanner.nextLine().trim();
-
-      pstmt.setString(1, name);
-      pstmt.setString(2, color);
-      pstmt.setString(3, type);
-      pstmt.setString(4, size);
-      pstmt.setString(5, description);
+      pstmt.setString(1, newClothing.get("name"));
+      pstmt.setString(2, newClothing.get("colour"));
+      pstmt.setString(3, newClothing.get("itemType"));
+      pstmt.setString(4, newClothing.get("size"));
+      pstmt.setString(5, newClothing.get("description"));
       pstmt.executeUpdate();
       System.out.println("Clothing item added successfully!");
 

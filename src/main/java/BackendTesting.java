@@ -1,12 +1,24 @@
 // for testing (controller)
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class BackendTesting {
   public static void main(String[] args) {
     ParseDatabase.initializeDatabase();
     ParseDatabase.addGucciDress();
     ParseDatabase.printItems();
+    System.out.println();
+    System.out.println();
+    Map<String, String> entry = new HashMap<>();
+    entry.put("colour", "red");
+    entry.put("name", "gucci shorts with leather");
+    entry.put("itemType", "shorts");
+    entry.put("size", "L");
+    entry.put("description", "there gucci shorts!");
+    ParseDatabase.addClothingItem(entry);
+    ParseDatabase.printItems();
+
     /*
     String id1 = String.valueOf(module.generateID());
     String id2 = String.valueOf(module.generateID());
