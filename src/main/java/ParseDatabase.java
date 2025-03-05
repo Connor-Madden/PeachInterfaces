@@ -120,6 +120,8 @@ public class ParseDatabase {
     }
   }
 
+  // removes a piece of clothing from the database
+  // ADMIN FUNCTION
   public static void removeClothingItem(int id) {
     String checkSQL = "SELECT COUNT(*) FROM ClothingItems WHERE id = ?";
     String deleteSQL = "DELETE FROM ClothingItems WHERE id = ?";
@@ -150,6 +152,8 @@ public class ParseDatabase {
     }
   }
 
+  // TESTING FUNCTIONS #############################################//
+
   // this is just for backend testing
   // don't use this for functionality!!
   public static void printItems() {
@@ -169,7 +173,6 @@ public class ParseDatabase {
   // adds a single gucci dress for testing
   // don't use this for functionality!!
   public static void addGucciDress() {
-
     String checkForDuplicatesSQL =
         "SELECT COUNT(*) FROM ClothingItems WHERE name = ?";
     String insertDataSQL = "INSERT INTO ClothingItems (id, name, colour, "
