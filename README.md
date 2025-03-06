@@ -11,6 +11,8 @@ The catalogue currently supports the following core functionalities:
 
 These functionalities are implemented within a functional GUI interface that includes five distinct fashion brands for variety.
 
+## How-to-Run
+
 ### Prerequisites
 - Java Development Kit (JDK 23 or later): https://www.oracle.com/java/technologies/javase/jdk23-archive-downloads.html
 - Apache Maven: https://maven.apache.org/install.html
