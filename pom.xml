@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>csci2020u</groupId>
-    <artifactId>lab02</artifactId>
+    <artifactId>catalogue</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>Test-Project</name>
+    <name>Fashion-Catalogue-Project</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
