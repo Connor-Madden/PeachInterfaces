@@ -8,7 +8,7 @@ public class CatalogueGUI {
     private JFrame frame;
     private DefaultListModel<String> itemListModel;
     private JList<String> itemList;
-    private Icon tShirtIcon;
+    private Icon clothingIcon;
 
     public CatalogueGUI() {
         frame = new JFrame("Fashion and Clothing Catalogue");
@@ -16,10 +16,10 @@ public class CatalogueGUI {
         frame.setSize(800, 600);
         frame.setLayout(new BorderLayout());
 
-        // Load and resize T-shirt icon
-        ImageIcon originalIcon = new ImageIcon("src/main/java/clothingIcon.png");
+        // Load and resize clothing icon
+        ImageIcon originalIcon = new ImageIcon("src/main/java/ClothingIcon.png");
         Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
-        tShirtIcon = new ImageIcon(scaledImage);
+        clothingIcon = new ImageIcon(scaledImage);
 
         // Set background color
         frame.getContentPane().setBackground(Color.WHITE);
@@ -90,7 +90,7 @@ public class CatalogueGUI {
         panel.add(new JLabel("Size:")); panel.add(sizeField);
         panel.add(new JLabel("Description:")); panel.add(descriptionField);
 
-        int result = JOptionPane.showConfirmDialog(frame, panel, "Add Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, tShirtIcon);
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Add Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (result == JOptionPane.OK_OPTION) {
             Map<String, String> newItem = new HashMap<>();
             newItem.put("name", nameField.getText());
@@ -105,7 +105,7 @@ public class CatalogueGUI {
 
     private void editClothingItem() {
         if (itemList.isSelectionEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Select an item to edit.", "Edit Item", JOptionPane.PLAIN_MESSAGE, tShirtIcon);
+            JOptionPane.showMessageDialog(frame, "Select an item to edit.", "Edit Item", JOptionPane.PLAIN_MESSAGE, clothingIcon);
             return;
         }
 
@@ -143,7 +143,7 @@ public class CatalogueGUI {
         panel.add(new JLabel("Size:")); panel.add(sizeField);
         panel.add(new JLabel("Description:")); panel.add(descriptionField);
 
-        int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, tShirtIcon);
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (result == JOptionPane.OK_OPTION) {
             Map<String, String> updatedItem = new HashMap<>();
             updatedItem.put("name", nameField.getText());
@@ -158,14 +158,14 @@ public class CatalogueGUI {
 
     private void removeClothingItem() {
         if (itemList.isSelectionEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Select an item to remove.", "Remove Item", JOptionPane.PLAIN_MESSAGE, tShirtIcon);
+            JOptionPane.showMessageDialog(frame, "Select an item to remove.", "Remove Item", JOptionPane.PLAIN_MESSAGE, clothingIcon);
             return;
         }
 
         String selectedValue = itemList.getSelectedValue().replaceAll("<[^>]*>", "");
         int id = Integer.parseInt(selectedValue.split(" \\|")[0].trim());
 
-        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to remove this item?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, tShirtIcon);
+        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to remove this item?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (confirm == JOptionPane.YES_OPTION) {
             ParseDatabase.removeClothingItem(id);
             loadClothingItems();
