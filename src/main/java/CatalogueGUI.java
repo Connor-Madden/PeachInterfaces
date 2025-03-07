@@ -174,5 +174,7 @@ public class CatalogueGUI {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(CatalogueGUI::new);
+        ParseDatabase.initializeDatabase();
+        ParseDatabase.addGucciDress();
     }
 }

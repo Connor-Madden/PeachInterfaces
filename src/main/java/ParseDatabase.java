@@ -128,8 +128,7 @@ public class ParseDatabase {
 
     try (Connection connection = DriverManager.getConnection(URL);
          PreparedStatement checkStmt = connection.prepareStatement(checkSQL);
-         PreparedStatement deleteStmt =
-             connection.prepareStatement(deleteSQL)) {
+         PreparedStatement deleteStmt = connection.prepareStatement(deleteSQL)) {
 
       // Check if ID exists
       checkStmt.setInt(1, id);
@@ -139,16 +138,41 @@ public class ParseDatabase {
         deleteStmt.setInt(1, id);
         int rowsAffected = deleteStmt.executeUpdate();
         System.out.println(rowsAffected > 0
-                               ? "Clothing item removed successfully."
-                               : "Failed to remove item.");
+                ? "Clothing item removed successfully."
+                : "Failed to remove item.");
+
+        // After deletion, reset the auto-increment to the highest id
+        resetAutoIncrement(connection);
       } else {
         System.out.println("No item found with ID: " + id);
       }
     } catch (SQLException error) {
       error.printStackTrace();
       System.out.println("Error: error removing item");
-      System.out.println(
-          "Error: a SQLException has occured. (removeClothingItem)");
+      System.out.println("Error: a SQLException has occured. (removeClothingItem)");
+    }
+  }
+
+  private static void resetAutoIncrement(Connection connection) {
+    // Query to get the highest current ID value
+    String maxIdQuery = "SELECT MAX(id) FROM ClothingItems";
+
+    try (Statement stmt = connection.createStatement();
+         ResultSet rs = stmt.executeQuery(maxIdQuery)) {
+
+      if (rs.next()) {
+        int maxId = rs.getInt(1);
+        // Reset the auto-increment value to the max id value
+        String resetSQL = "UPDATE sqlite_sequence SET seq = ? WHERE name = 'ClothingItems'";
+        try (PreparedStatement pstmt = connection.prepareStatement(resetSQL)) {
+          pstmt.setInt(1, maxId);
+          pstmt.executeUpdate();
+          System.out.println("Auto-increment reset to: " + maxId);
+        }
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+      System.out.println("Error resetting auto-increment.");
     }
   }
 
