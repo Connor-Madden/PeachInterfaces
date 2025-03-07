@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,24 +8,48 @@ public class CatalogueGUI {
     private JFrame frame;
     private DefaultListModel<String> itemListModel;
     private JList<String> itemList;
+    private Icon tShirtIcon;
 
     public CatalogueGUI() {
         frame = new JFrame("Fashion and Clothing Catalogue");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(700, 500);
+        frame.setSize(800, 600);
         frame.setLayout(new BorderLayout());
+
+        // Load and resize T-shirt icon
+        ImageIcon originalIcon = new ImageIcon("src/main/java/clothingIcon.png");
+        Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+        tShirtIcon = new ImageIcon(scaledImage);
+
+        // Set background color
+        frame.getContentPane().setBackground(Color.WHITE);
 
         // Item List
         itemListModel = new DefaultListModel<>();
         itemList = new JList<>(itemListModel);
+        itemList.setFont(new Font("Arial", Font.PLAIN, 14));
+        itemList.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         JScrollPane scrollPane = new JScrollPane(itemList);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         frame.add(scrollPane, BorderLayout.CENTER);
 
         // Buttons Panel
         JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(220, 220, 220));
         JButton addButton = new JButton("Add Item");
         JButton editButton = new JButton("Edit Item");
         JButton removeButton = new JButton("Remove Item");
+
+        addButton.setFont(new Font("Arial", Font.BOLD, 14));
+        editButton.setFont(new Font("Arial", Font.BOLD, 14));
+        removeButton.setFont(new Font("Arial", Font.BOLD, 14));
+        addButton.setBackground(new Color(70, 130, 180)); // SteelBlue
+        editButton.setBackground(new Color(210, 105, 30)); // Chocolate
+        removeButton.setBackground(new Color(178, 34, 34)); // FireBrick
+
+        addButton.setForeground(Color.WHITE);
+        editButton.setForeground(Color.WHITE);
+        removeButton.setForeground(Color.WHITE);
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
@@ -49,7 +71,7 @@ public class CatalogueGUI {
         itemListModel.clear();
         List<Map<String, Object>> items = ParseDatabase.getClothingItems();
         for (Map<String, Object> item : items) {
-            itemListModel.addElement(item.get("id") + " | " + item.get("name") + " | " + item.get("colour"));
+            itemListModel.addElement("<html><body style='padding: 10px;'>" + item.get("id") + " | " + item.get("name") + " | " + item.get("colour") + " | " + item.get("itemType") + " | " + item.get("size") + " | " + item.get("description") + "</body></html>");
         }
     }
 
@@ -60,14 +82,15 @@ public class CatalogueGUI {
         JTextField sizeField = new JTextField();
         JTextField descriptionField = new JTextField();
 
-        JPanel panel = new JPanel(new GridLayout(5, 2));
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.add(new JLabel("Name:")); panel.add(nameField);
         panel.add(new JLabel("Color:")); panel.add(colorField);
         panel.add(new JLabel("Type:")); panel.add(typeField);
         panel.add(new JLabel("Size:")); panel.add(sizeField);
         panel.add(new JLabel("Description:")); panel.add(descriptionField);
 
-        int result = JOptionPane.showConfirmDialog(frame, panel, "Add Item", JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Add Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, tShirtIcon);
         if (result == JOptionPane.OK_OPTION) {
             Map<String, String> newItem = new HashMap<>();
             newItem.put("name", nameField.getText());
@@ -82,27 +105,45 @@ public class CatalogueGUI {
 
     private void editClothingItem() {
         if (itemList.isSelectionEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Select an item to edit.");
+            JOptionPane.showMessageDialog(frame, "Select an item to edit.", "Edit Item", JOptionPane.PLAIN_MESSAGE, tShirtIcon);
             return;
         }
 
-        String selectedValue = itemList.getSelectedValue();
-        int id = Integer.parseInt(selectedValue.split(" \\|")[0]);
+        String selectedValue = itemList.getSelectedValue().replaceAll("<[^>]*>", "");
+        int id = Integer.parseInt(selectedValue.split(" \\|")[0].trim());
 
-        JTextField nameField = new JTextField();
-        JTextField colorField = new JTextField();
-        JTextField typeField = new JTextField();
-        JTextField sizeField = new JTextField();
-        JTextField descriptionField = new JTextField();
+        List<Map<String, Object>> clothingItems = ParseDatabase.getClothingItems();
 
-        JPanel panel = new JPanel(new GridLayout(5, 2));
+        // Find the item by ID
+        Map<String, String> existingItem = null;
+        for (Map<String, Object> item : clothingItems) {
+            if ((int) item.get("id") == id) { // Assuming the "id" field is an Integer
+                existingItem = new HashMap<>();
+                existingItem.put("name", (String) item.get("name"));
+                existingItem.put("colour", (String) item.get("colour"));
+                existingItem.put("itemType", (String) item.get("itemType"));
+                existingItem.put("size", (String) item.get("size"));
+                existingItem.put("description", (String) item.get("description"));
+                break;
+            }
+        }
+
+        // Pre-fill the fields with the existing item details
+        JTextField nameField = new JTextField(existingItem.get("name"));
+        JTextField colorField = new JTextField(existingItem.get("colour"));
+        JTextField typeField = new JTextField(existingItem.get("itemType"));
+        JTextField sizeField = new JTextField(existingItem.get("size"));
+        JTextField descriptionField = new JTextField(existingItem.get("description"));
+
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.add(new JLabel("Name:")); panel.add(nameField);
         panel.add(new JLabel("Color:")); panel.add(colorField);
         panel.add(new JLabel("Type:")); panel.add(typeField);
         panel.add(new JLabel("Size:")); panel.add(sizeField);
         panel.add(new JLabel("Description:")); panel.add(descriptionField);
 
-        int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item", JOptionPane.OK_CANCEL_OPTION);
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, tShirtIcon);
         if (result == JOptionPane.OK_OPTION) {
             Map<String, String> updatedItem = new HashMap<>();
             updatedItem.put("name", nameField.getText());
@@ -117,14 +158,14 @@ public class CatalogueGUI {
 
     private void removeClothingItem() {
         if (itemList.isSelectionEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Select an item to remove.");
+            JOptionPane.showMessageDialog(frame, "Select an item to remove.", "Remove Item", JOptionPane.PLAIN_MESSAGE, tShirtIcon);
             return;
         }
 
-        String selectedValue = itemList.getSelectedValue();
-        int id = Integer.parseInt(selectedValue.split(" \\|")[0]);
+        String selectedValue = itemList.getSelectedValue().replaceAll("<[^>]*>", "");
+        int id = Integer.parseInt(selectedValue.split(" \\|")[0].trim());
 
-        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to remove this item?", "Confirm", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to remove this item?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, tShirtIcon);
         if (confirm == JOptionPane.YES_OPTION) {
             ParseDatabase.removeClothingItem(id);
             loadClothingItems();
