@@ -57,10 +57,10 @@ These functionalities are implemented within a functional GUI interface that inc
 - Implement "show similar items" feature
 
 ## Contributors
-- Rayan Alam
-- Connor Madden
-- Adrian Ramirez
-- Maryam Baz
-- Thaddeus Baturensky
+- Rayan Alam | Front-End Lead
+- Connor Madden | Project Manager
+- Adrian Ramirez | Back-End Lead
+- Maryam Baz | Technical Lead
+- Thaddeus Baturensky | Software Quality Lead
 
 
