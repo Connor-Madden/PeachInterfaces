@@ -9,7 +9,7 @@ The catalogue currently supports the following core functionalities:
 - **Delete items** from the catalogue
 - **Edit items** in the catalogue
 
-These functionalities are implemented within a functional GUI interface that includes five distinct fashion brands for variety.
+These functionalities are implemented within a functional GUI interface that includes at least five distinct fashion brands for variety. For more details on the brands, check out our [https://www.figma.com/design/UmCMeFAGiIxgV8TuBUHmbj/Peach-Interfaces?node-id=9-2&t=uSMTgTtrm3yoc0jZ-1](Figma) designs which include various catalogues featuring brands and the overall layout.
 
 ## How-to-Run
 
@@ -42,20 +42,20 @@ These functionalities are implemented within a functional GUI interface that inc
    - Click the **crimson red** button to remove a clothing item.
    - Click the **bright red** button to exit the application.
      
-## Upcoming Features (Backlog)
+## Upcoming Features
 
 ### Iteration 2:
-- Upgrade the user interface for better usability and aesthetics
-- Display images of catalogue items
-- Implement search and filter functionality
-- **Authentication system:**
-  - Log in
-  - Log out
+- Upgrade the user interface for better usability and aesthetics (Todo)
+- Display images of catalogue items (Todo)
+- Implement search and filter functionality (In Progress)
+- **Authentication system:** 
+  - Log in (Todo)
+  - Log out (Todo)
 
 ### Iteration 3:
-- Further enhance the interface to make it visually appealing
-- Add product details pages
-- Implement "show similar items" feature
+- Further enhance the interface to make it visually appealing (Backlog)
+- Add product details pages (Backlog)
+- Implement "show similar items" feature (Backlog)
 
 ## Contributors
 - Rayan Alam | Front-End Lead
