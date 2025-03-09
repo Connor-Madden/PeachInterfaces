@@ -9,6 +9,7 @@ public class CatalogueGUI {
     private DefaultListModel<String> itemListModel;
     private JList<String> itemList;
     private Icon clothingIcon;
+    private ImageIcon fadedLogo;
 
     public CatalogueGUI() {
         frame = new JFrame("Fashion and Clothing Catalogue");
@@ -39,21 +40,27 @@ public class CatalogueGUI {
         JButton addButton = new JButton("Add Item");
         JButton editButton = new JButton("Edit Item");
         JButton removeButton = new JButton("Remove Item");
+        JButton exitButton = new JButton("Exit");
 
         addButton.setFont(new Font("Arial", Font.BOLD, 14));
         editButton.setFont(new Font("Arial", Font.BOLD, 14));
         removeButton.setFont(new Font("Arial", Font.BOLD, 14));
+        exitButton.setFont(new Font("Arial", Font.BOLD, 14));
+
         addButton.setBackground(new Color(70, 130, 180)); // SteelBlue
         editButton.setBackground(new Color(210, 105, 30)); // Chocolate
         removeButton.setBackground(new Color(178, 34, 34)); // FireBrick
+        exitButton.setBackground(new Color(255, 0, 0)); // Red-Orange
 
         addButton.setForeground(Color.WHITE);
         editButton.setForeground(Color.WHITE);
         removeButton.setForeground(Color.WHITE);
+        exitButton.setForeground(Color.WHITE);
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
         buttonPanel.add(removeButton);
+        buttonPanel.add(exitButton); // Add the exit button to the panel
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
         // Load items into the list
@@ -63,6 +70,7 @@ public class CatalogueGUI {
         addButton.addActionListener(e -> addClothingItem());
         editButton.addActionListener(e -> editClothingItem());
         removeButton.addActionListener(e -> removeClothingItem());
+        exitButton.addActionListener(e -> exitApplication()); // Action for exit button
 
         frame.setVisible(true);
     }
@@ -169,6 +177,13 @@ public class CatalogueGUI {
         if (confirm == JOptionPane.YES_OPTION) {
             ParseDatabase.removeClothingItem(id);
             loadClothingItems();
+        }
+    }
+
+    private void exitApplication() {
+        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to exit?", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
+        if (confirm == JOptionPane.YES_OPTION) {
+            System.exit(0); // Exit the application
         }
     }
 
