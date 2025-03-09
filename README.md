@@ -35,6 +35,12 @@ These functionalities are implemented within a functional GUI interface that inc
 6. **Launch the Application**:
   ```mvn exec:java -Dexec.mainClass="csci2040u.catalogue.Fashion-Catalogue-Project"```
 
+7. **Run the Application**:
+   Once the application is running, you can start using it:
+   - Click the blue button to add a clothing item and its attributes.
+   - Click the yellow button to edit an existing clothing item in the catalogue.
+   - Click the red button to remove a clothing item.
+     
 ## Upcoming Features (Backlog)
 
 ### Iteration 2:
