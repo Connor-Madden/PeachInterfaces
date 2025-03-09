@@ -1,4 +1,4 @@
-# PeachInterfaces: Fashion & Clothing Catalogue Project
+# Peach Interfaces: Fashion & Clothing Catalogue Project
 
 ## Overview
 This project is focused on cataloging fashion and clothing items. The application features a graphical user interface (GUI) built using JavaSwing/JavaFX, with database management handled through SQL and Java.
@@ -35,6 +35,12 @@ These functionalities are implemented within a functional GUI interface that inc
 6. **Launch the Application**:
   ```mvn exec:java -Dexec.mainClass="csci2040u.catalogue.Fashion-Catalogue-Project"```
 
+7. **Run the Application**:
+   Once the application is running, you can start using it:
+   - Click the blue button to add a clothing item and its attributes.
+   - Click the yellow button to edit an existing clothing item in the catalogue.
+   - Click the red button to remove a clothing item.
+     
 ## Upcoming Features (Backlog)
 
 ### Iteration 2:
@@ -51,10 +57,10 @@ These functionalities are implemented within a functional GUI interface that inc
 - Implement "show similar items" feature
 
 ## Contributors
-- Rayan Alam
-- Connor Madden
-- Adrian Ramirez
-- Maryam Baz
-- Thaddeus Baturensky
+- Rayan Alam | Front-End Lead
+- Connor Madden | Project Manager
+- Adrian Ramirez | Back-End Lead
+- Maryam Baz | Technical Lead
+- Thaddeus Baturensky | Software Quality Lead
 
 
