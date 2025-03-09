@@ -9,7 +9,7 @@ The catalogue currently supports the following core functionalities:
 - **Delete items** from the catalogue
 - **Edit items** in the catalogue
 
-These functionalities are implemented within a functional GUI interface that includes at least five distinct fashion brands for variety. For more details on the brands, check out our [https://www.figma.com/design/UmCMeFAGiIxgV8TuBUHmbj/Peach-Interfaces?node-id=9-2&t=uSMTgTtrm3yoc0jZ-1](Figma) designs which include various catalogues featuring brands and the overall layout.
+These functionalities are implemented within a functional GUI interface that includes at least five distinct fashion brands for variety. For more details on the brands, check out our [Figma](https://www.figma.com/design/UmCMeFAGiIxgV8TuBUHmbj/Peach-Interfaces?node-id=9-2&t=uSMTgTtrm3yoc0jZ-1) designs which include various catalogues featuring brands and the overall layout.
 
 ## How-to-Run
 
