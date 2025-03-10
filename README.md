@@ -37,10 +37,10 @@ These functionalities are implemented within a functional GUI interface that inc
 
 7. **Run the Application**:
    Once the application is running, you can start using it:
-   - Click the blue button to add a clothing item and its attributes.
+   - Click the blue button to add a clothing item and its attributes to the catalogue.
    - Click the yellow button to edit an existing clothing item in the catalogue.
-   - Click the **crimson red** button to remove a clothing item.
-   - Click the **bright red** button to exit the application.
+   - Click the **crimson red** button to remove a clothing item from the catalogue.
+   - Click the **bright red** button to exit the catalogue.
      
 ## Upcoming Features
 
@@ -55,7 +55,7 @@ These functionalities are implemented within a functional GUI interface that inc
 ### Iteration 3:
 - Further enhance the interface to make it visually appealing (Backlog)
 - Add product details pages (Backlog)
-- Implement "show similar items" feature (Backlog)
+- Implement the "show similar items" feature (Backlog)
 
 ## Contributors
 - Rayan Alam | Front-End Lead
