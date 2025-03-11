@@ -3,6 +3,9 @@ import java.util.*;
 
 public class ParseDatabase {
   private static final String URL = "jdbc:sqlite:fashionDb.db";
+  // TODO: change hardcoded values: to use a single String array
+  private static final String[] HashmapKeys = {
+      "id", "name", "colour", "itemType", "size", "description"};
 
   public static void initializeDatabase() {
     String createTableSQL = "CREATE TABLE IF NOT EXISTS ClothingItems ("
@@ -210,7 +213,61 @@ public class ParseDatabase {
     return operations[word1.length()][word2.length()];
   }
 
-  // Search algorithm / filter algorithm
+  // filter algorithm
+  // for searching:
+  //    pass a HashMap <String, Object>
+  //    put null/""/" " for a non-entered Object value
+  public static List<Map<String, Object>>
+  filterItems(Map<String, Object> filters) {
+    List<Map<String, Object>> filtered = getClothingItems();
+
+    for (Map<String, Object> item : getClothingItems()) {
+      boolean wordMatches = false;
+      // compare words with the same key (category/ attribute)
+      for (String key : HashmapKeys) {
+        // only search non-empty strings and non-nulls
+        if (filters.get(key) != null &&
+            !filters.get(key).toString().trim().isEmpty()) {
+
+          boolean found = false;
+          // for size and id keys it should be exact instead
+          if (key.equals("size") || key.equals("id")) {
+            if (filters.get(key).toString().toLowerCase().trim().equals(
+                    item.get(key).toString().toLowerCase().trim())) {
+              found = true;
+            }
+
+            // for every other key than size
+          } else {
+            for (String word2 :
+                 filters.get(key).toString().toLowerCase().split(" ")) {
+              for (String word1 :
+                   item.get(key).toString().toLowerCase().split(" ")) {
+
+                // if there is 1 or less typos add to the filtered list
+                if (levenstein(word1.trim(), word2.trim()) <= 1) {
+                  found = true;
+                  break;
+                }
+              }
+              if (found) {
+                break;
+              }
+            }
+          }
+          // for each key:
+          // if the the words don't match then remove the item
+          if (!found) {
+            filtered.remove(item);
+            break;
+          }
+        }
+      }
+    }
+    return filtered;
+  }
+
+  // Search algorithm
   // for searching:
   //    pass a sentence: "red new dress"
   public static List<Map<String, Object>> searchItems(String sentence) {
@@ -220,11 +277,12 @@ public class ParseDatabase {
       boolean found = false;
       for (Map.Entry<String, Object> entry : item.entrySet()) {
         if (entry.getKey() != "id") {
-          for (String tag : sentence.toLowerCase().split(" ")) {
-            for (String val :
+          // compare every word
+          for (String word1 : sentence.toLowerCase().split(" ")) {
+            for (String word2 :
                  entry.getValue().toString().toLowerCase().split(" ")) {
               // if there is 1 or less typos add to the filtered list
-              if (levenstein(tag.trim(), val.trim()) <= 1) {
+              if (levenstein(word1.trim(), word2.trim()) <= 1) {
                 filtered.add(item);
                 found = true;
                 break;
@@ -233,9 +291,6 @@ public class ParseDatabase {
             if (found) {
               break;
             }
-          }
-          if (found) {
-            break;
           }
         }
         if (found) {

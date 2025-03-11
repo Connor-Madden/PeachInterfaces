@@ -49,7 +49,13 @@ public class BackendTesting {
 
     // test search function
     // should show the "red short" and the "blue dress"
-    List<Map<String, Object>> searched = ParseDatabase.searchItems("ree dres");
+    Map<String, Object> filters = new HashMap<>();
+    filters.put("name", "gucci");
+    filters.put("colour", "blue");
+    filters.put("size", "m");
+    filters.put("id", 1);
+
+    List<Map<String, Object>> searched = ParseDatabase.filterItems(filters);
 
     System.out.println("ITEMS FOUND FROM SEARCH:");
     if (!searched.isEmpty()) {
