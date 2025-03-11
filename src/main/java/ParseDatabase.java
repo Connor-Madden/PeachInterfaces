@@ -276,7 +276,7 @@ public class ParseDatabase {
     for (Map<String, Object> item : getClothingItems()) {
       boolean found = false;
       for (Map.Entry<String, Object> entry : item.entrySet()) {
-        if (entry.getKey() != "id") {
+        if (!entry.getKey().equals("id")) {
           // compare every word
           for (String word1 : sentence.toLowerCase().split(" ")) {
             for (String word2 :
