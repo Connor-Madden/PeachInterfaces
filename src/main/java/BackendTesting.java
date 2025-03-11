@@ -12,7 +12,7 @@ public class BackendTesting {
     System.out.println();
 
     ParseDatabase.addGucciDress();
-    ParseDatabase.printItems();
+    // ParseDatabase.printItems();
     System.out.println();
     System.out.println();
 
@@ -27,6 +27,7 @@ public class BackendTesting {
     System.out.println();
     System.out.println();
 
+    /*
     entry.put("colour", "blue");
     entry.put("name", "gucci shorts with leather");
     entry.put("itemType", "shorts");
@@ -40,6 +41,12 @@ public class BackendTesting {
 
     ParseDatabase.removeClothingItem(2);
     ParseDatabase.printItems();
+
+     */
+
+    // test levenstein algorithm
+    System.out.println("levenstein distance: " +
+                       ParseDatabase.levenstein("apple", "apple"));
   }
 
   // deletes the database file!!

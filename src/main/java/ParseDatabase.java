@@ -128,7 +128,8 @@ public class ParseDatabase {
 
     try (Connection connection = DriverManager.getConnection(URL);
          PreparedStatement checkStmt = connection.prepareStatement(checkSQL);
-         PreparedStatement deleteStmt = connection.prepareStatement(deleteSQL)) {
+         PreparedStatement deleteStmt =
+             connection.prepareStatement(deleteSQL)) {
 
       // Check if ID exists
       checkStmt.setInt(1, id);
@@ -138,8 +139,8 @@ public class ParseDatabase {
         deleteStmt.setInt(1, id);
         int rowsAffected = deleteStmt.executeUpdate();
         System.out.println(rowsAffected > 0
-                ? "Clothing item removed successfully."
-                : "Failed to remove item.");
+                               ? "Clothing item removed successfully."
+                               : "Failed to remove item.");
 
         // After deletion, reset the auto-increment to the highest id
         resetAutoIncrement(connection);
@@ -149,7 +150,8 @@ public class ParseDatabase {
     } catch (SQLException error) {
       error.printStackTrace();
       System.out.println("Error: error removing item");
-      System.out.println("Error: a SQLException has occured. (removeClothingItem)");
+      System.out.println(
+          "Error: a SQLException has occured. (removeClothingItem)");
     }
   }
 
@@ -163,7 +165,8 @@ public class ParseDatabase {
       if (rs.next()) {
         int maxId = rs.getInt(1);
         // Reset the auto-increment value to the max id value
-        String resetSQL = "UPDATE sqlite_sequence SET seq = ? WHERE name = 'ClothingItems'";
+        String resetSQL =
+            "UPDATE sqlite_sequence SET seq = ? WHERE name = 'ClothingItems'";
         try (PreparedStatement pstmt = connection.prepareStatement(resetSQL)) {
           pstmt.setInt(1, maxId);
           pstmt.executeUpdate();
@@ -174,6 +177,37 @@ public class ParseDatabase {
       e.printStackTrace();
       System.out.println("Error resetting auto-increment.");
     }
+  }
+
+  // Levenstein distance algorithm
+  // uses Levenstein's algorithm to give a number based on the number of
+  // operations needed to change a string into another
+  public static int levenstein(String word1, String word2) {
+    // create the matrix to fill with number of operation needed to change the
+    // substring of the string
+    int[][] operations = new int[word1.length() + 1][word2.length() + 1];
+    for (int i = 0; i <= word1.length(); i++) {
+      for (int j = 0; j <= word2.length(); j++) {
+        if (i == 0) {
+          operations[i][j] = j; // add the chars from word2
+        } else if (j == 0) {
+          operations[i][j] = i; // delete the chars from word1
+        } else {
+          int cost = 1;
+          if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+            cost = 0;
+          }
+
+          operations[i][j] =
+              Math.min(Math.min(operations[i - 1][j] + 1,  // delete
+                                operations[i][j - 1] + 1), // insert
+                       operations[i - 1][j - 1] + cost);   // replace
+        }
+      }
+    }
+    // return the bottom right element which represents the distance for the
+    // whole string (the largest substring)
+    return operations[word1.length()][word2.length()];
   }
 
   // TESTING FUNCTIONS #############################################//
