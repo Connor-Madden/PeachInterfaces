@@ -3,6 +3,9 @@ import java.util.*;
 
 public class ParseDatabase {
   private static final String URL = "jdbc:sqlite:fashionDb.db";
+  // TODO: change hardcoded values: to use a single String array
+  private static final String[] HashmapKeys = {
+      "id", "name", "colour", "itemType", "size", "description"};
 
   public static void initializeDatabase() {
     String createTableSQL = "CREATE TABLE IF NOT EXISTS ClothingItems ("
@@ -128,7 +131,8 @@ public class ParseDatabase {
 
     try (Connection connection = DriverManager.getConnection(URL);
          PreparedStatement checkStmt = connection.prepareStatement(checkSQL);
-         PreparedStatement deleteStmt = connection.prepareStatement(deleteSQL)) {
+         PreparedStatement deleteStmt =
+             connection.prepareStatement(deleteSQL)) {
 
       // Check if ID exists
       checkStmt.setInt(1, id);
@@ -138,8 +142,8 @@ public class ParseDatabase {
         deleteStmt.setInt(1, id);
         int rowsAffected = deleteStmt.executeUpdate();
         System.out.println(rowsAffected > 0
-                ? "Clothing item removed successfully."
-                : "Failed to remove item.");
+                               ? "Clothing item removed successfully."
+                               : "Failed to remove item.");
 
         // After deletion, reset the auto-increment to the highest id
         resetAutoIncrement(connection);
@@ -149,7 +153,8 @@ public class ParseDatabase {
     } catch (SQLException error) {
       error.printStackTrace();
       System.out.println("Error: error removing item");
-      System.out.println("Error: a SQLException has occured. (removeClothingItem)");
+      System.out.println(
+          "Error: a SQLException has occured. (removeClothingItem)");
     }
   }
 
@@ -163,7 +168,8 @@ public class ParseDatabase {
       if (rs.next()) {
         int maxId = rs.getInt(1);
         // Reset the auto-increment value to the max id value
-        String resetSQL = "UPDATE sqlite_sequence SET seq = ? WHERE name = 'ClothingItems'";
+        String resetSQL =
+            "UPDATE sqlite_sequence SET seq = ? WHERE name = 'ClothingItems'";
         try (PreparedStatement pstmt = connection.prepareStatement(resetSQL)) {
           pstmt.setInt(1, maxId);
           pstmt.executeUpdate();
@@ -174,6 +180,125 @@ public class ParseDatabase {
       e.printStackTrace();
       System.out.println("Error resetting auto-increment.");
     }
+  }
+
+  // Levenstein distance algorithm
+  // uses Levenstein's algorithm to give a number based on the number of
+  // operations needed to change a string into another
+  public static int levenstein(String word1, String word2) {
+    // create the matrix to fill with number of operation needed to change the
+    // substring of the string
+    int[][] operations = new int[word1.length() + 1][word2.length() + 1];
+    for (int i = 0; i <= word1.length(); i++) {
+      for (int j = 0; j <= word2.length(); j++) {
+        if (i == 0) {
+          operations[i][j] = j; // add the chars from word2
+        } else if (j == 0) {
+          operations[i][j] = i; // delete the chars from word1
+        } else {
+          int cost = 1;
+          if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+            cost = 0;
+          }
+
+          operations[i][j] =
+              Math.min(Math.min(operations[i - 1][j] + 1,  // delete
+                                operations[i][j - 1] + 1), // insert
+                       operations[i - 1][j - 1] + cost);   // replace
+        }
+      }
+    }
+    // return the bottom right element which represents the distance for the
+    // whole string (the largest substring)
+    return operations[word1.length()][word2.length()];
+  }
+
+  // filter algorithm
+  // for searching:
+  //    pass a HashMap <String, Object>
+  //    put null/""/" " for a non-entered Object value
+  public static List<Map<String, Object>>
+  filterItems(Map<String, Object> filters) {
+    List<Map<String, Object>> filtered = getClothingItems();
+
+    for (Map<String, Object> item : getClothingItems()) {
+      boolean wordMatches = false;
+      // compare words with the same key (category/ attribute)
+      for (String key : HashmapKeys) {
+        // only search non-empty strings and non-nulls
+        if (filters.get(key) != null &&
+            !filters.get(key).toString().trim().isEmpty()) {
+
+          boolean found = false;
+          // for size and id keys it should be exact instead
+          if (key.equals("size") || key.equals("id")) {
+            if (filters.get(key).toString().toLowerCase().trim().equals(
+                    item.get(key).toString().toLowerCase().trim())) {
+              found = true;
+            }
+
+            // for every other key than size
+          } else {
+            for (String word2 :
+                 filters.get(key).toString().toLowerCase().split(" ")) {
+              for (String word1 :
+                   item.get(key).toString().toLowerCase().split(" ")) {
+
+                // if there is 1 or less typos add to the filtered list
+                if (levenstein(word1.trim(), word2.trim()) <= 1) {
+                  found = true;
+                  break;
+                }
+              }
+              if (found) {
+                break;
+              }
+            }
+          }
+          // for each key:
+          // if the the words don't match then remove the item
+          if (!found) {
+            filtered.remove(item);
+            break;
+          }
+        }
+      }
+    }
+    return filtered;
+  }
+
+  // Search algorithm
+  // for searching:
+  //    pass a sentence: "red new dress"
+  public static List<Map<String, Object>> searchItems(String sentence) {
+    List<Map<String, Object>> filtered = new ArrayList<>();
+
+    for (Map<String, Object> item : getClothingItems()) {
+      boolean found = false;
+      for (Map.Entry<String, Object> entry : item.entrySet()) {
+        if (entry.getKey() != "id") {
+          // compare every word
+          for (String word1 : sentence.toLowerCase().split(" ")) {
+            for (String word2 :
+                 entry.getValue().toString().toLowerCase().split(" ")) {
+              // if there is 1 or less typos add to the filtered list
+              if (levenstein(word1.trim(), word2.trim()) <= 1) {
+                filtered.add(item);
+                found = true;
+                break;
+              }
+            }
+            if (found) {
+              break;
+            }
+          }
+        }
+        if (found) {
+          break;
+        }
+      }
+    }
+    return filtered;
   }
 
   // TESTING FUNCTIONS #############################################//

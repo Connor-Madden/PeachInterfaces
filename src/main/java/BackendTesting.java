@@ -1,8 +1,7 @@
 // for testing (controller)
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BackendTesting {
   public static void main(String[] args) {
@@ -12,7 +11,7 @@ public class BackendTesting {
     System.out.println();
 
     ParseDatabase.addGucciDress();
-    ParseDatabase.printItems();
+    // ParseDatabase.printItems();
     System.out.println();
     System.out.println();
 
@@ -27,6 +26,7 @@ public class BackendTesting {
     System.out.println();
     System.out.println();
 
+    /*
     entry.put("colour", "blue");
     entry.put("name", "gucci shorts with leather");
     entry.put("itemType", "shorts");
@@ -40,6 +40,34 @@ public class BackendTesting {
 
     ParseDatabase.removeClothingItem(2);
     ParseDatabase.printItems();
+
+     */
+
+    // test levenstein algorithm
+    // System.out.println("levenstein distance: " +
+    //                   ParseDatabase.levenstein("apple", "apple"));
+
+    // test search function
+    // should show the "red short" and the "blue dress"
+    Map<String, Object> filters = new HashMap<>();
+    filters.put("name", "gucci");
+    filters.put("colour", "blue");
+    filters.put("size", "m");
+    filters.put("id", 1);
+
+    List<Map<String, Object>> searched = ParseDatabase.filterItems(filters);
+
+    System.out.println("ITEMS FOUND FROM SEARCH:");
+    if (!searched.isEmpty()) {
+      for (Map<String, Object> item : searched) {
+        for (Map.Entry<String, Object> entry2 : item.entrySet()) {
+          System.out.println(entry2.getKey() + ": " + entry2.getValue());
+        }
+        System.out.println("-------------------");
+      }
+    } else {
+      System.out.println("items not found");
+    }
   }
 
   // deletes the database file!!
