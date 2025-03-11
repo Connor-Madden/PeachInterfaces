@@ -210,6 +210,42 @@ public class ParseDatabase {
     return operations[word1.length()][word2.length()];
   }
 
+  // Search algorithm / filter algorithm
+  // for searching:
+  //    pass a sentence: "red new dress"
+  public static List<Map<String, Object>> searchItems(String sentence) {
+    List<Map<String, Object>> filtered = new ArrayList<>();
+
+    for (Map<String, Object> item : getClothingItems()) {
+      boolean found = false;
+      for (Map.Entry<String, Object> entry : item.entrySet()) {
+        if (entry.getKey() != "id") {
+          for (String tag : sentence.toLowerCase().split(" ")) {
+            for (String val :
+                 entry.getValue().toString().toLowerCase().split(" ")) {
+              // if there is 1 or less typos add to the filtered list
+              if (levenstein(tag.trim(), val.trim()) <= 1) {
+                filtered.add(item);
+                found = true;
+                break;
+              }
+            }
+            if (found) {
+              break;
+            }
+          }
+          if (found) {
+            break;
+          }
+        }
+        if (found) {
+          break;
+        }
+      }
+    }
+    return filtered;
+  }
+
   // TESTING FUNCTIONS #############################################//
 
   // this is just for backend testing

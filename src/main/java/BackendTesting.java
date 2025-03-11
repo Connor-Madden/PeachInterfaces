@@ -1,8 +1,7 @@
 // for testing (controller)
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BackendTesting {
   public static void main(String[] args) {
@@ -45,8 +44,24 @@ public class BackendTesting {
      */
 
     // test levenstein algorithm
-    System.out.println("levenstein distance: " +
-                       ParseDatabase.levenstein("apple", "apple"));
+    // System.out.println("levenstein distance: " +
+    //                   ParseDatabase.levenstein("apple", "apple"));
+
+    // test search function
+    // should show the "red short" and the "blue dress"
+    List<Map<String, Object>> searched = ParseDatabase.searchItems("ree dres");
+
+    System.out.println("ITEMS FOUND FROM SEARCH:");
+    if (!searched.isEmpty()) {
+      for (Map<String, Object> item : searched) {
+        for (Map.Entry<String, Object> entry2 : item.entrySet()) {
+          System.out.println(entry2.getKey() + ": " + entry2.getValue());
+        }
+        System.out.println("-------------------");
+      }
+    } else {
+      System.out.println("items not found");
+    }
   }
 
   // deletes the database file!!
