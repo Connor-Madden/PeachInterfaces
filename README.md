@@ -45,9 +45,9 @@ These functionalities are implemented within a functional GUI interface that inc
 ## Upcoming Features
 
 ### Iteration 2:
-- Upgrade the user interface for better usability and aesthetics (Todo)
-- Display images of catalogue items (Todo)
-- Implement search and filter functionality (In Progress)
+- Upgrade the user interface for better usability and aesthetics (In Progress)
+- Display images of catalogue items (In Progress)
+- Implement search and filter functionality (In Testing)
 - **Authentication system:** 
   - Log in (Todo)
   - Log out (Todo)
