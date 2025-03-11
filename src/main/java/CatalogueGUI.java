@@ -9,7 +9,6 @@ public class CatalogueGUI {
     private DefaultListModel<String> itemListModel;
     private JList<String> itemList;
     private Icon clothingIcon;
-    private ImageIcon fadedLogo;
 
     public CatalogueGUI() {
         frame = new JFrame("Fashion and Clothing Catalogue");
@@ -86,7 +85,8 @@ public class CatalogueGUI {
     private void addClothingItem() {
         JTextField nameField = new JTextField();
         JTextField colorField = new JTextField();
-        JTextField typeField = new JTextField();
+        String[] itemTypes = {"Outdoor Wear", "Indoor Wear", "Jewelry", "Accessories", "Kids Clothing"};
+        JComboBox<String> typeField = new JComboBox<>(itemTypes);
         JTextField sizeField = new JTextField();
         JTextField descriptionField = new JTextField();
 
@@ -103,7 +103,7 @@ public class CatalogueGUI {
             Map<String, String> newItem = new HashMap<>();
             newItem.put("name", nameField.getText());
             newItem.put("colour", colorField.getText());
-            newItem.put("itemType", typeField.getText());
+            newItem.put("itemType", typeField.getSelectedItem().toString());
             newItem.put("size", sizeField.getText());
             newItem.put("description", descriptionField.getText());
             ParseDatabase.addClothingItem(newItem);
@@ -139,7 +139,8 @@ public class CatalogueGUI {
         // Pre-fill the fields with the existing item details
         JTextField nameField = new JTextField(existingItem.get("name"));
         JTextField colorField = new JTextField(existingItem.get("colour"));
-        JTextField typeField = new JTextField(existingItem.get("itemType"));
+        String[] itemTypes = {"Outdoor Wear", "Indoor Wear", "Jewelry", "Accessories", "Kids Clothing"};
+        JComboBox<String> typeField = new JComboBox<>(itemTypes);
         JTextField sizeField = new JTextField(existingItem.get("size"));
         JTextField descriptionField = new JTextField(existingItem.get("description"));
 
@@ -156,7 +157,7 @@ public class CatalogueGUI {
             Map<String, String> updatedItem = new HashMap<>();
             updatedItem.put("name", nameField.getText());
             updatedItem.put("colour", colorField.getText());
-            updatedItem.put("itemType", typeField.getText());
+            updatedItem.put("itemType", typeField.getSelectedItem().toString());
             updatedItem.put("size", sizeField.getText());
             updatedItem.put("description", descriptionField.getText());
             ParseDatabase.editClothingItem(id, updatedItem);
