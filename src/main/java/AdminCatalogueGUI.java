@@ -4,13 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CatalogueGUI {
+public class AdminCatalogueGUI {
     private JFrame frame;
     private DefaultListModel<String> itemListModel;
     private JList<String> itemList;
     private Icon clothingIcon;
 
-    public CatalogueGUI() {
+    public AdminCatalogueGUI() {
         frame = new JFrame("Fashion and Clothing Catalogue");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
@@ -189,7 +189,7 @@ public class CatalogueGUI {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(CatalogueGUI::new);
+        SwingUtilities.invokeLater(AdminCatalogueGUI::new);
         ParseDatabase.initializeDatabase();
         ParseDatabase.addGucciDress();
     }
