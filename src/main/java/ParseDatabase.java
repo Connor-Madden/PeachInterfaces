@@ -276,21 +276,19 @@ public class ParseDatabase {
     for (Map<String, Object> item : getClothingItems()) {
       boolean found = false;
       for (Map.Entry<String, Object> entry : item.entrySet()) {
-        if (!entry.getKey().equals("id")) {
-          // compare every word
-          for (String word1 : sentence.toLowerCase().split(" ")) {
-            for (String word2 :
-                 entry.getValue().toString().toLowerCase().split(" ")) {
-              // if there is 1 or less typos add to the filtered list
-              if (levenstein(word1.trim(), word2.trim()) <= 1) {
-                filtered.add(item);
-                found = true;
-                break;
-              }
-            }
-            if (found) {
+        // compare every word
+        for (String word1 : sentence.toLowerCase().split(" ")) {
+          for (String word2 :
+               entry.getValue().toString().toLowerCase().split(" ")) {
+            // if there is 1 or less typos add to the filtered list
+            if (levenstein(word1.trim(), word2.trim()) <= 1) {
+              filtered.add(item);
+              found = true;
               break;
             }
+          }
+          if (found) {
+            break;
           }
         }
         if (found) {
