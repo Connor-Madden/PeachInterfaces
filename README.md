@@ -4,7 +4,7 @@
 This project is focused on cataloging fashion and clothing items. The application features a graphical user interface (GUI) built using JavaSwing/JavaFX, with database management handled through SQL and Java.
 
 ## Features
-The catalogue currently supports the following core functionalities:
+The catalogue currently supports the following core functionalities for the Admin:
 - **Add items** to the catalogue
 - **Delete items** from the catalogue
 - **Edit items** in the catalogue
@@ -36,7 +36,7 @@ These functionalities are implemented within a functional GUI interface that inc
   ```mvn exec:java -Dexec.mainClass="csci2040u.catalogue.Fashion-Catalogue-Project"```
 
 7. **Run the Application**:
-   Once the application is running, you can start using it:
+   Once the application is running, you can start using it with Admin privileges:
    - Click the blue button to add a clothing item and its attributes to the catalogue.
    - Click the yellow button to edit an existing clothing item in the catalogue.
    - Click the **crimson red** button to remove a clothing item from the catalogue.
