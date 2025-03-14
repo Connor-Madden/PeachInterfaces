@@ -72,7 +72,7 @@ public class BackendTesting {
 
   // deletes the database file!!
   // don't use this for functionality!!
-  private static void deleteDatabaseFile() {
+  public static void deleteDatabaseFile() {
     File dbFile = new File("fashionDb.db");
     if (dbFile.exists()) {
       if (dbFile.delete()) {
