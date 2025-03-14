@@ -6,8 +6,8 @@ import java.util.Map;
 
 public class AdminCatalogueGUI {
     private JFrame frame;
-    private DefaultListModel<String> itemListModel;
-    private JList<String> itemList;
+    public DefaultListModel<String> itemListModel;
+    public JList<String> itemList;
     private Icon clothingIcon;
 
     public AdminCatalogueGUI() {
@@ -74,7 +74,7 @@ public class AdminCatalogueGUI {
         frame.setVisible(true);
     }
 
-    private void loadClothingItems() {
+    public void loadClothingItems() {
         itemListModel.clear();
         List<Map<String, Object>> items = ParseDatabase.getClothingItems();
         for (Map<String, Object> item : items) {
@@ -82,7 +82,7 @@ public class AdminCatalogueGUI {
         }
     }
 
-    private void addClothingItem() {
+    public void addClothingItem() {
         JTextField nameField = new JTextField();
         JTextField colorField = new JTextField();
         String[] itemTypes = {"Outdoor Wear", "Indoor Wear", "Jewelry", "Accessories", "Kids Clothing"};
@@ -111,7 +111,7 @@ public class AdminCatalogueGUI {
         }
     }
 
-    private void editClothingItem() {
+    public void editClothingItem() {
         if (itemList.isSelectionEmpty()) {
             JOptionPane.showMessageDialog(frame, "Select an item to edit.", "Edit Item", JOptionPane.PLAIN_MESSAGE, clothingIcon);
             return;
@@ -165,7 +165,7 @@ public class AdminCatalogueGUI {
         }
     }
 
-    private void removeClothingItem() {
+    public void removeClothingItem() {
         if (itemList.isSelectionEmpty()) {
             JOptionPane.showMessageDialog(frame, "Select an item to remove.", "Remove Item", JOptionPane.PLAIN_MESSAGE, clothingIcon);
             return;
@@ -181,7 +181,7 @@ public class AdminCatalogueGUI {
         }
     }
 
-    private void exitApplication() {
+    public void exitApplication() {
         int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to exit?", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (confirm == JOptionPane.YES_OPTION) {
             System.exit(0); // Exit the application

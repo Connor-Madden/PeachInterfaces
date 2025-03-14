@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.List;
@@ -12,7 +10,7 @@ public class UserCatalogueGUI {
     private DefaultListModel<JPanel> itemListModel;
     private JList<JPanel> itemList;
     private JTextField searchField;
-    private JButton searchButton;
+    private RoundedButton searchButton;
     private JComboBox<String> filterDropdown;
 
     public UserCatalogueGUI() {
@@ -30,10 +28,10 @@ public class UserCatalogueGUI {
         searchField.setFont(new Font("Arial", Font.PLAIN, 16));
         searchField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        searchButton = createStyledButton("Search", new Color(60, 179, 113), new Color(255, 255, 255)); // Green button
+        searchButton = new RoundedButton("Search", new Color(60, 179, 113), new Color(255, 255, 255)); // Green rounded button
         filterDropdown = new JComboBox<>(new String[]{"All", "Indoor Wear", "Outdoor Wear", "Jewelry", "Accessories", "Kids Clothing"});
         filterDropdown.setFont(new Font("Arial", Font.BOLD, 14));
-        filterDropdown.setBackground(new Color(60, 179, 113)); // Orange background
+        filterDropdown.setBackground(new Color(60, 179, 113)); // Green background
         filterDropdown.setForeground(Color.WHITE); // White text
 
         topPanel.add(new JLabel("Search: "));
@@ -141,27 +139,57 @@ public class UserCatalogueGUI {
         }
     }
 
-    private JButton createStyledButton(String text, Color bgColor, Color fgColor) {
-        JButton button = new JButton(text);
-        button.setBackground(bgColor);
-        button.setForeground(fgColor);
-        button.setFont(new Font("Arial", Font.BOLD, 14));
-        button.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        button.setFocusPainted(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    private static class RoundedButton extends JButton {
+        private final Color bgColor;
+        private final Color fgColor;
+        private Color currentColor;
 
-        // Hover effect
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(bgColor.darker());
-            }
+        public RoundedButton(String text, Color bgColor, Color fgColor) {
+            super(text);
+            this.bgColor = bgColor;
+            this.fgColor = fgColor;
+            this.currentColor = bgColor; // Set initial color
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(bgColor);
-            }
-        });
+            setFocusPainted(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setOpaque(false);
+            setFont(new Font("Arial", Font.BOLD, 14));
+            setForeground(fgColor);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        return button;
+            // Hover effect
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    currentColor = bgColor.darker();
+                    repaint(); // Repaint the button to reflect color change
+                }
+
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    currentColor = bgColor;
+                    repaint(); // Repaint the button to reflect color change
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Draw the rounded background
+            g2.setColor(currentColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+
+            // Draw the button text
+            FontMetrics fm = g2.getFontMetrics();
+            int x = (getWidth() - fm.stringWidth(getText())) / 2;
+            int y = (getHeight() + fm.getAscent()) / 2 - 2;
+            g2.setColor(fgColor);
+            g2.drawString(getText(), x, y);
+
+            g2.dispose();
+        }
     }
 
     public static void main(String[] args) {
