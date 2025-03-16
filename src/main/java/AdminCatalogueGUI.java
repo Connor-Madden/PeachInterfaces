@@ -10,7 +10,7 @@ public class AdminCatalogueGUI {
     public JList<String> itemList;
     private Icon clothingIcon;
 
-    public AdminCatalogueGUI() {
+    public AdminCatalogueGUI(String username) { // Accept username as a parameter
         frame = new JFrame("Fashion and Clothing Catalogue");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
@@ -33,7 +33,27 @@ public class AdminCatalogueGUI {
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        // Buttons Panel
+        // Create a panel for the username and log out button (top-left)
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.setBackground(new Color(220, 220, 220));
+
+        // Add username label
+        JLabel usernameLabel = new JLabel("Logged in as: " + username);
+        usernameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        topPanel.add(usernameLabel);
+
+        // Add log out button
+        JButton logoutButton = new JButton("Log Out");
+        logoutButton.setFont(new Font("Arial", Font.BOLD, 14));
+        logoutButton.setBackground(new Color(255, 69, 0)); // OrangeRed
+        logoutButton.setForeground(Color.WHITE);
+        logoutButton.addActionListener(e -> System.exit(0)); // Close the program on click
+        topPanel.add(logoutButton);
+
+        // Add the top panel to the frame (NORTH region)
+        frame.add(topPanel, BorderLayout.NORTH);
+
+        // Buttons Panel (bottom-middle)
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(new Color(220, 220, 220));
         JButton addButton = new JButton("Add Item");
@@ -60,6 +80,8 @@ public class AdminCatalogueGUI {
         buttonPanel.add(editButton);
         buttonPanel.add(removeButton);
         buttonPanel.add(exitButton); // Add the exit button to the panel
+
+        // Add the button panel to the frame (SOUTH region)
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
         // Load items into the list
@@ -189,7 +211,8 @@ public class AdminCatalogueGUI {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(AdminCatalogueGUI::new);
+        // Example usage with a hardcoded username
+        SwingUtilities.invokeLater(() -> new AdminCatalogueGUI("admin"));
         ParseDatabase.initializeDatabase();
         ParseDatabase.addGucciDress();
     }
