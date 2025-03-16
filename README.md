@@ -55,7 +55,7 @@ These functionalities are implemented within a functional GUI interface that inc
 ### Iteration 3:
 - Further enhance the interface to make it visually appealing (Backlog)
 - Add product details pages (Backlog)
-- Implement the "show similar items" feature (Backlog)
+- Implement the "show favourite items list" feature (Backlog)
 
 ## Contributors
 - Rayan Alam | Front-End Lead
