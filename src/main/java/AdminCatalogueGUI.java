@@ -1,19 +1,28 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 public class AdminCatalogueGUI {
     private JFrame frame;
     public DefaultListModel<String> itemListModel;
     public JList<String> itemList;
     private Icon clothingIcon;
+    private JLabel slidingTextLabel;
+    private Timer slideOutTimer;
+    private Timer slideInTimer;
+    private int slidingTextWidth = 0;
+    private final int SLIDING_TEXT_MAX_WIDTH = 150; // Maximum width of the sliding text
 
-    public AdminCatalogueGUI(String username) { // Accept username as a parameter
-        frame = new JFrame("Fashion and Clothing Catalogue");
+    public AdminCatalogueGUI(String username) {
+        frame = new JFrame("Admin - Fashion and Clothing Catalogue");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
+        frame.setSize(900, 700);
         frame.setLayout(new BorderLayout());
 
         // Load and resize clothing icon
@@ -24,42 +33,66 @@ public class AdminCatalogueGUI {
         // Set background color
         frame.getContentPane().setBackground(Color.WHITE);
 
+        // --------------- TOP PANEL -------------------
+        JPanel topPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for precise control
+        topPanel.setBackground(new Color(255, 235, 205)); // Light Orange
+
+        // --------------- LOGO PANEL (Left Side) -------------------
+        JPanel logoPanel = new JPanel();
+        logoPanel.setBackground(new Color(255, 235, 205));
+        logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS)); // Use BoxLayout for flexible sizing
+
+        String logoPath = "src/main/images/Logo.png";
+        ImageIcon logoIcon = new ImageIcon(new ImageIcon(logoPath).getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+        JLabel logoLabel = new JLabel(logoIcon);
+        logoPanel.add(logoLabel);
+
+        // Panel for sliding text
+        JPanel slidingTextPanel = new JPanel();
+        slidingTextPanel.setBackground(new Color(255, 235, 205));
+        slidingTextPanel.setLayout(new BoxLayout(slidingTextPanel, BoxLayout.X_AXIS));
+        slidingTextPanel.setPreferredSize(new Dimension(0, 50)); // Initially hidden
+
+        // Sliding text label
+        slidingTextLabel = new JLabel("Peach Interfaces");
+        slidingTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        slidingTextLabel.setForeground(new Color(60, 179, 113));
+        slidingTextPanel.add(slidingTextLabel);
+        logoPanel.add(slidingTextPanel);
+
+        // Add logoPanel to topPanel with constraints
+        GridBagConstraints gbcLogo = new GridBagConstraints();
+        gbcLogo.gridx = 0;
+        gbcLogo.gridy = 0;
+        gbcLogo.weightx = 0; // Do not expand horizontally
+        gbcLogo.anchor = GridBagConstraints.WEST; // Anchor to the left
+        gbcLogo.insets = new Insets(0, 10, 0, 10); // Add some padding
+        topPanel.add(logoPanel, gbcLogo);
+
+        // Add the top panel to the frame (NORTH region)
+        frame.add(topPanel, BorderLayout.NORTH);
+
         // Item List
         itemListModel = new DefaultListModel<>();
         itemList = new JList<>(itemListModel);
         itemList.setFont(new Font("Arial", Font.PLAIN, 14));
         itemList.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        itemList.setBackground(new Color(255, 235, 205)); // Light Orange background for the list
+        itemList.setOpaque(true); // Ensure the background is visible
+
         JScrollPane scrollPane = new JScrollPane(itemList);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 4)); // Green border with 2px thickness
+        scrollPane.getViewport().setBackground(new Color(255, 235, 205)); // Light Orange background for the scroll pane
         frame.add(scrollPane, BorderLayout.CENTER);
-
-        // Create a panel for the username and log out button (top-left)
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.setBackground(new Color(220, 220, 220));
-
-        // Add username label
-        JLabel usernameLabel = new JLabel("Logged in as: " + username);
-        usernameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        topPanel.add(usernameLabel);
-
-        // Add log out button
-        JButton logoutButton = new JButton("Log Out");
-        logoutButton.setFont(new Font("Arial", Font.BOLD, 14));
-        logoutButton.setBackground(new Color(255, 69, 0)); // OrangeRed
-        logoutButton.setForeground(Color.WHITE);
-        logoutButton.addActionListener(e -> System.exit(0)); // Close the program on click
-        topPanel.add(logoutButton);
-
-        // Add the top panel to the frame (NORTH region)
-        frame.add(topPanel, BorderLayout.NORTH);
 
         // Buttons Panel (bottom-middle)
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(new Color(220, 220, 220));
+        buttonPanel.setBackground(new Color(255, 235, 205)); // Light Orange background
+        buttonPanel.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 2));
         JButton addButton = new JButton("Add Item");
         JButton editButton = new JButton("Edit Item");
         JButton removeButton = new JButton("Remove Item");
-        JButton exitButton = new JButton("Exit");
+        JButton exitButton = new JButton("Log Out");
 
         addButton.setFont(new Font("Arial", Font.BOLD, 14));
         editButton.setFont(new Font("Arial", Font.BOLD, 14));
@@ -81,8 +114,19 @@ public class AdminCatalogueGUI {
         buttonPanel.add(removeButton);
         buttonPanel.add(exitButton); // Add the exit button to the panel
 
-        // Add the button panel to the frame (SOUTH region)
-        frame.add(buttonPanel, BorderLayout.SOUTH);
+        // Create a new panel to hold both the button panel and the text label
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(buttonPanel, BorderLayout.NORTH);
+
+        // Text label
+        JLabel bottomTextLabel = new JLabel("© 2025 Peach Interfaces. Freshly Picked Clothing For You");
+        bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        bottomTextLabel.setForeground(new Color(60, 179, 113));
+        bottomTextLabel.setHorizontalAlignment(JLabel.CENTER);
+        bottomPanel.add(bottomTextLabel, BorderLayout.CENTER);
+
+        // Add the bottom panel to the frame (SOUTH region)
+        frame.add(bottomPanel, BorderLayout.SOUTH);
 
         // Load items into the list
         loadClothingItems();
@@ -92,6 +136,53 @@ public class AdminCatalogueGUI {
         editButton.addActionListener(e -> editClothingItem());
         removeButton.addActionListener(e -> removeClothingItem());
         exitButton.addActionListener(e -> exitApplication()); // Action for exit button
+
+        // Initialize timers for sliding animation
+        slideOutTimer = new Timer(10, new ActionListener() { // Adjusted delay
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (slidingTextWidth < SLIDING_TEXT_MAX_WIDTH) {
+                    slidingTextWidth += 5; // Adjust speed of sliding
+                    slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
+                    slidingTextPanel.revalidate();
+                    slidingTextPanel.repaint(); // Ensure the panel is repainted
+                } else {
+                    slideOutTimer.stop();
+                }
+            }
+        });
+
+        slideInTimer = new Timer(10, new ActionListener() { // Adjusted delay
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (slidingTextWidth > 0) {
+                    slidingTextWidth -= 5; // Adjust speed of sliding
+                    slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
+                    slidingTextPanel.revalidate();
+                    slidingTextPanel.repaint(); // Ensure the panel is repainted
+                } else {
+                    slideInTimer.stop();
+                }
+            }
+        });
+
+        // Enable double buffering for smoother animation
+        slidingTextPanel.setDoubleBuffered(true);
+
+        // Add mouse listeners to the logo
+        logoLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                slideInTimer.stop();
+                slideOutTimer.start();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                slideOutTimer.stop();
+                slideInTimer.start();
+            }
+        });
 
         frame.setVisible(true);
     }
@@ -107,7 +198,7 @@ public class AdminCatalogueGUI {
     public void addClothingItem() {
         JTextField nameField = new JTextField();
         JTextField colorField = new JTextField();
-        String[] itemTypes = {"Outdoor Wear", "Indoor Wear", "Jewelry", "Accessories", "Kids Clothing"};
+        String[] itemTypes = {"Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"};
         JComboBox<String> typeField = new JComboBox<>(itemTypes);
         JTextField sizeField = new JTextField();
         JTextField descriptionField = new JTextField();
@@ -161,7 +252,7 @@ public class AdminCatalogueGUI {
         // Pre-fill the fields with the existing item details
         JTextField nameField = new JTextField(existingItem.get("name"));
         JTextField colorField = new JTextField(existingItem.get("colour"));
-        String[] itemTypes = {"Outdoor Wear", "Indoor Wear", "Jewelry", "Accessories", "Kids Clothing"};
+        String[] itemTypes = {"Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"};
         JComboBox<String> typeField = new JComboBox<>(itemTypes);
         JTextField sizeField = new JTextField(existingItem.get("size"));
         JTextField descriptionField = new JTextField(existingItem.get("description"));
@@ -204,9 +295,10 @@ public class AdminCatalogueGUI {
     }
 
     public void exitApplication() {
-        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to exit?", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
+        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to log out?", "Log Out", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (confirm == JOptionPane.YES_OPTION) {
-            System.exit(0); // Exit the application
+            frame.dispose();  // Close the current AdminCatalogueGUI
+            new LogInPanel(); // Open the login screen again
         }
     }
 

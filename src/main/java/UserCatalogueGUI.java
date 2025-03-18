@@ -4,6 +4,11 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 
 // User Catalog Class
@@ -14,26 +19,74 @@ public class UserCatalogueGUI {
     private JTextField searchField;
     private RoundedButton searchButton;
     private JComboBox<String> filterDropdown;
+    private JLabel slidingTextLabel;
+    private Timer slideOutTimer;
+    private Timer slideInTimer;
+    private int slidingTextWidth = 0;
+    private final int SLIDING_TEXT_MAX_WIDTH = 150; // Maximum width of the sliding text
+    private Icon clothingIcon;
 
-    public UserCatalogueGUI() {
-        frame = new JFrame("Fashion and Clothing Catalogue");
+    // Hardcoded mapping of item IDs to image paths
+    private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
+
+    static {
+        // Add item IDs and their corresponding image paths
+        ITEM_IMAGES.put(1, "src/main/images/Dress.png");
+        ITEM_IMAGES.put(2, "src/main/images/Roots.png");
+        ITEM_IMAGES.put(3, "src/main/images/Merrell.png");
+        ITEM_IMAGES.put(4, "src/main/images/Jeans.png");
+        ITEM_IMAGES.put(5, "src/main/images/Bracelet.png");
+        ITEM_IMAGES.put(6, "src/main/images/Puma.png");
+        ITEM_IMAGES.put(7, "src/main/images/Wallet.png");
+    }
+
+    public UserCatalogueGUI(String username) {
+        frame = new JFrame("User - Fashion and Clothing Catalogue");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(900, 700);
         frame.setLayout(new BorderLayout());
         frame.getContentPane().setBackground(Color.WHITE);
 
+        // Load and resize clothing icon
+        ImageIcon originalIcon = new ImageIcon("src/main/java/ClothingIcon.png");
+        Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+        clothingIcon = new ImageIcon(scaledImage);
+
         // --------------- TOP PANEL -------------------
-        JPanel topPanel = new JPanel(new BorderLayout());
+        JPanel topPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for precise control
         topPanel.setBackground(new Color(255, 235, 205)); // Light Orange
 
         // --------------- LOGO PANEL (Left Side) -------------------
-        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel logoPanel = new JPanel();
         logoPanel.setBackground(new Color(255, 235, 205));
+        logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS)); // Use BoxLayout for flexible sizing
 
         String logoPath = "src/main/images/Logo.png";
         ImageIcon logoIcon = new ImageIcon(new ImageIcon(logoPath).getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
         JLabel logoLabel = new JLabel(logoIcon);
         logoPanel.add(logoLabel);
+
+        // Panel for sliding text
+        JPanel slidingTextPanel = new JPanel();
+        slidingTextPanel.setBackground(new Color(255, 235, 205));
+        slidingTextPanel.setLayout(new BoxLayout(slidingTextPanel, BoxLayout.X_AXIS));
+        slidingTextPanel.setPreferredSize(new Dimension(0, 50)); // Initially hidden
+
+        // Sliding text label
+        slidingTextLabel = new JLabel("Peach Interfaces");
+        slidingTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        slidingTextLabel.setForeground(new Color(60, 179, 113));
+        slidingTextPanel.add(slidingTextLabel);
+        logoPanel.add(slidingTextPanel);
+
+        // Add logoPanel to topPanel with constraints
+        GridBagConstraints gbcLogo = new GridBagConstraints();
+        gbcLogo.gridx = 0;
+        gbcLogo.gridy = 0;
+        gbcLogo.weightx = 0; // Do not expand horizontally
+        gbcLogo.anchor = GridBagConstraints.WEST; // Anchor to the left
+        gbcLogo.insets = new Insets(0, 10, 0, 10); // Add some padding
+        topPanel.add(logoPanel, gbcLogo);
 
         // --------------- SEARCH & FILTER PANEL (Center) -------------------
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
@@ -44,7 +97,7 @@ public class UserCatalogueGUI {
         searchField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         searchButton = new RoundedButton("Search", new Color(60, 179, 113), Color.WHITE);
-        filterDropdown = new JComboBox<>(new String[]{"All", "Indoor Wear", "Outdoor Wear", "Jewelry", "Accessories", "Kids Clothing"});
+        filterDropdown = new JComboBox<>(new String[]{"All", "Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"});
         filterDropdown.setFont(new Font("Arial", Font.BOLD, 14));
         filterDropdown.setBackground(new Color(60, 179, 113));
         filterDropdown.setForeground(Color.WHITE);
@@ -55,8 +108,14 @@ public class UserCatalogueGUI {
         searchPanel.add(new JLabel("Filter: "));
         searchPanel.add(filterDropdown);
 
-        topPanel.add(logoPanel, BorderLayout.WEST);
-        topPanel.add(searchPanel, BorderLayout.CENTER);
+        // Add searchPanel to topPanel with constraints
+        GridBagConstraints gbcSearch = new GridBagConstraints();
+        gbcSearch.gridx = 1;
+        gbcSearch.gridy = 0;
+        gbcSearch.weightx = 1; // Expand to fill remaining space
+        gbcSearch.fill = GridBagConstraints.HORIZONTAL; // Fill horizontally
+        gbcSearch.anchor = GridBagConstraints.CENTER; // Anchor to the center
+        topPanel.add(searchPanel, gbcSearch);
 
         frame.add(topPanel, BorderLayout.NORTH);
 
@@ -72,6 +131,64 @@ public class UserCatalogueGUI {
 
         frame.add(scrollPane, BorderLayout.CENTER);
 
+        // --------------- BOTTOM PANEL -------------------
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBackground(new Color(255, 235, 205)); // Light Orange
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding
+
+        // Text label
+        JLabel bottomTextLabel = new JLabel("© 2025 Peach Interfaces. Freshly Picked Clothing For You");
+        bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        bottomTextLabel.setForeground(new Color(60, 179, 113));
+        bottomTextLabel.setHorizontalAlignment(JLabel.CENTER);
+        bottomPanel.add(bottomTextLabel, BorderLayout.CENTER);
+
+        // Log Out button
+        JButton logOutButton = new JButton("Log Out");
+        logOutButton.setFont(new Font("Arial", Font.BOLD, 14));
+        logOutButton.setBackground(new Color(255, 0, 0)); // Red-Orange
+        logOutButton.setForeground(Color.WHITE);
+        logOutButton.setFocusPainted(false);
+        logOutButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15)); // Add padding
+
+        // Hover effect for Log Out button
+        logOutButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                logOutButton.setBackground(new Color(200, 0, 0)); // Darker red on hover
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                logOutButton.setBackground(new Color(255, 0, 0)); // Original color on exit
+            }
+        });
+
+        // Log Out button with confirmation dialog
+        logOutButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Are you sure you want to log out?",
+                    "Log Out",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    clothingIcon
+            );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                frame.dispose(); // Close the current window
+                new LogInPanel(); // Open the login panel
+            }
+        });
+
+        // Add the Log Out button to the bottom panel
+        JPanel logOutPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        logOutPanel.setBackground(new Color(255, 235, 205)); // Match bottom panel color
+        logOutPanel.add(logOutButton);
+        bottomPanel.add(logOutPanel, BorderLayout.EAST);
+
+        // Add the bottom panel to the frame
+        frame.add(bottomPanel, BorderLayout.SOUTH);
 
         // Load initial items
         loadClothingItems(ParseDatabase.getClothingItems());
@@ -88,6 +205,48 @@ public class UserCatalogueGUI {
         filterDropdown.addActionListener(e -> performFilter());
         searchField.addActionListener(e -> performSearch());
 
+        // Initialize timers for sliding animation
+        slideOutTimer = new Timer(10, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (slidingTextWidth < SLIDING_TEXT_MAX_WIDTH) {
+                    slidingTextWidth += 5; // Adjust speed of sliding
+                    slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
+                    slidingTextPanel.revalidate();
+                } else {
+                    slideOutTimer.stop();
+                }
+            }
+        });
+
+        slideInTimer = new Timer(10, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (slidingTextWidth > 0) {
+                    slidingTextWidth -= 5; // Adjust speed of sliding
+                    slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
+                    slidingTextPanel.revalidate();
+                } else {
+                    slideInTimer.stop();
+                }
+            }
+        });
+
+        // Add mouse listeners to the logo
+        logoLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                slideInTimer.stop();
+                slideOutTimer.start();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                slideOutTimer.stop();
+                slideInTimer.start();
+            }
+        });
+
         frame.setVisible(true);
     }
 
@@ -100,30 +259,54 @@ public class UserCatalogueGUI {
             panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1));
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-            // Load image
-            String itemName = ((String) item.get("name")).replaceAll("\\s+", "").toLowerCase();
-            String imagePath = "src/main/resources/images/" + itemName + ".png";
+            // Load image using item ID
+            int itemId = (int) item.get("id"); // Assuming the ID is stored as an integer
+            String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png"); // Use hardcoded image or default logo
             ImageIcon icon = loadImage(imagePath);
 
             JLabel imageLabel = new JLabel(icon);
             imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            JLabel nameLabel = new JLabel("<html><b>" + item.get("name") + "</b></html>", JLabel.CENTER);
-            nameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+            // Item name with simplified formatting
+            String itemName = (String) item.get("name");
+            JLabel nameLabel = new JLabel(
+                    "<html><div style='text-align: center; font-size: medium; font-weight: bold; color: #333;'>" +
+                            itemName +
+                            "</div></html>",
+                    JLabel.CENTER
+            );
 
-            JLabel detailsLabel = new JLabel("<html>Color: " + item.get("colour") + "<br>"
-                    + "Type: " + item.get("itemType") + "<br>"
-                    + "Size: " + item.get("size") + "<br>"
-                    + "<i>" + item.get("description") + "</i></html>", JLabel.CENTER);
-            detailsLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            // Item details with simplified formatting
+            JLabel detailsLabel = new JLabel(
+                    "<html><div style='text-align: center; font-size: small; color: #555;'>" +
+                            "<p style='margin: 2px 0;'><b>Color:</b> " + item.get("colour") + "</p>" +
+                            "<p style='margin: 2px 0;'><b>Type:</b> " + item.get("itemType") + "</p>" +
+                            "<p style='margin: 2px 0;'><b>Size:</b> " + item.get("size") + "</p>" +
+                            "<p style='margin: 4px 0; font-style: italic; color: #777;'>" + item.get("description") + "</p>" +
+                            "</div></html>",
+                    JLabel.CENTER
+            );
 
             nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             detailsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             panel.add(imageLabel);
-            panel.add(Box.createVerticalStrut(5));
+            panel.add(Box.createVerticalStrut(5)); // Add spacing between image and text
             panel.add(nameLabel);
             panel.add(detailsLabel);
+
+            // Add hover effect to the panel
+            panel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    panel.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 2)); // Green border on hover
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1)); // Restore original border
+                }
+            });
 
             // Add click listener to open fullscreen
             panel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -140,6 +323,7 @@ public class UserCatalogueGUI {
     }
 
 
+
     private void openProductFullscreen(Map<String, Object> item, String imagePath) {
         JFrame fullscreenFrame = new JFrame();
         fullscreenFrame.setUndecorated(true);
@@ -147,13 +331,29 @@ public class UserCatalogueGUI {
         fullscreenFrame.getContentPane().setBackground(Color.WHITE);
         fullscreenFrame.setLayout(new BorderLayout());
 
-        // Load large image
-        ImageIcon fullImage = new ImageIcon(imagePath);
+        // Correctly resize the image maintaining the aspect ratio
+        ImageIcon fullImage = loadImage(imagePath); // Use the specific image path
         if (fullImage.getIconWidth() == -1) {
             fullImage = new ImageIcon("src/main/images/Logo.png"); // Default image
         }
 
-        JLabel imageLabel = new JLabel(fullImage);
+        Image image = fullImage.getImage();
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        double screenWidth = screenSize.getWidth();
+        double screenHeight = screenSize.getHeight();
+        double imageWidth = image.getWidth(null);
+        double imageHeight = image.getHeight(null);
+
+// Calculate scaling factor to maintain aspect ratio
+        double scaleFactor = Math.min(screenWidth / imageWidth, screenHeight / imageHeight);
+        int scaledWidth = (int) (imageWidth * scaleFactor);
+        int scaledHeight = (int) (imageHeight * scaleFactor);
+
+// Resize the image to fit the screen while maintaining aspect ratio
+        Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+        ImageIcon scaledIcon = new ImageIcon(scaledImage);
+
+        JLabel imageLabel = new JLabel(scaledIcon);
         imageLabel.setHorizontalAlignment(JLabel.CENTER);
         imageLabel.setVerticalAlignment(JLabel.CENTER);
 
@@ -170,17 +370,30 @@ public class UserCatalogueGUI {
         imagePanel.setBackground(Color.WHITE);
         imagePanel.add(imageLabel);
 
-        // Close fullscreen on click or ESC key
-        fullscreenFrame.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                fullscreenFrame.dispose();
-            }
-        });
+        // Close button
+        JButton closeButton = new JButton("Close");
+        closeButton.setFont(new Font("Arial", Font.BOLD, 14));
+        closeButton.setBackground(new Color(255, 0, 0)); // Red-Orange
+        closeButton.setForeground(Color.WHITE);
+        closeButton.setFocusPainted(false);
+        closeButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15)); // Add padding
 
+        // Close button action
+        closeButton.addActionListener(e -> fullscreenFrame.dispose());
+
+        // Panel for the close button
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.add(closeButton);
+
+        // Add components to the frame
         fullscreenFrame.add(imagePanel, BorderLayout.CENTER);
         fullscreenFrame.add(detailsLabel, BorderLayout.SOUTH);
+        fullscreenFrame.add(buttonPanel, BorderLayout.NORTH);
 
         fullscreenFrame.setVisible(true);
+        fullscreenFrame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize the frame
+        fullscreenFrame.setUndecorated(true); // Remove window decorations
     }
 
 
@@ -276,6 +489,7 @@ public class UserCatalogueGUI {
 
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(UserCatalogueGUI::new);
+        String username = (args.length > 0) ? args[0] : "Guest";
+        SwingUtilities.invokeLater(() -> new UserCatalogueGUI(username));
     }
 }

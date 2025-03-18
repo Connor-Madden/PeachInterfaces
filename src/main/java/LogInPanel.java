@@ -7,50 +7,100 @@ public class LogInPanel {
     private JFrame loginFrame;
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private JCheckBox showPasswordCheckbox;
 
     public LogInPanel() {
         // Create the login frame
-        loginFrame = new JFrame("Login");
+        loginFrame = new JFrame("Login/Logout");
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        loginFrame.setSize(300, 200);
+        loginFrame.setSize(450, 300);
         loginFrame.setLayout(new BorderLayout());
+        loginFrame.setResizable(false); // Prohibit full screen
+
+        // Create the top panel for the logo and text
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        ImageIcon logoIcon = new ImageIcon(new ImageIcon("src/main/images/Logo.png").getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+        JLabel logoLabel = new JLabel(logoIcon);
+        JLabel titleLabel = new JLabel("Welcome to the Peach Interfaces Fashion Catalogue!");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+        topPanel.add(logoLabel);
+        topPanel.add(titleLabel);
 
         // Create the panel for the login form
-        JPanel loginPanel = new JPanel(new GridLayout(3, 2, 10, 10));
-        loginPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel loginPanel = new JPanel(new GridBagLayout());
+        loginPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Username field
-        loginPanel.add(new JLabel("Username:"));
-        usernameField = new JTextField();
-        loginPanel.add(usernameField);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        loginPanel.add(new JLabel("Username:"), gbc);
+
+        gbc.gridx = 1;
+        usernameField = new JTextField(15);
+        loginPanel.add(usernameField, gbc);
 
         // Password field
-        loginPanel.add(new JLabel("Password:"));
-        passwordField = new JPasswordField();
-        loginPanel.add(passwordField);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        loginPanel.add(new JLabel("Password:"), gbc);
 
-        // Login button
+        gbc.gridx = 1;
+        passwordField = new JPasswordField(15);
+        loginPanel.add(passwordField, gbc);
+
+        // Show password checkbox
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        showPasswordCheckbox = new JCheckBox("Show Password");
+        showPasswordCheckbox.addActionListener(e ->
+                passwordField.setEchoChar(showPasswordCheckbox.isSelected() ? '\0' : '*')
+        );
+        loginPanel.add(showPasswordCheckbox, gbc);
+
+        // Login and Exit buttons panel
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+
         JButton loginButton = new JButton("Login");
+        loginButton.setBackground(new Color(60, 179, 113));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setFocusPainted(false);
+        loginButton.setFont(new Font("Arial", Font.BOLD, 12));
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
 
-                // Check credentials
                 if ("admin".equals(username) && "adminpass".equals(password)) {
-                    // If credentials are correct, close the login frame and open the AdminCatalogueGUI
-                    loginFrame.dispose();
-                    new AdminCatalogueGUI(username);
+                    showLoginDialog("You are logged in as admin", username, true);
+                } else if ("user".equals(username) && "userpass".equals(password)) {
+                    showLoginDialog("You are logged in as user", username, false);
                 } else {
-                    // If credentials are incorrect, show an error message
                     JOptionPane.showMessageDialog(loginFrame, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
-        loginPanel.add(loginButton);
 
-        // Add the login panel to the frame
+        JButton exitButton = new JButton("Exit");
+        exitButton.setBackground(new Color(255, 69, 0));
+        exitButton.setForeground(Color.WHITE);
+        exitButton.setFocusPainted(false);
+        exitButton.setFont(new Font("Arial", Font.BOLD, 12));
+        exitButton.addActionListener(e -> System.exit(0));
+
+        buttonPanel.add(loginButton);
+        buttonPanel.add(exitButton);
+
+        loginPanel.add(buttonPanel, gbc);
+
+        // Add components to the frame
+        loginFrame.add(topPanel, BorderLayout.NORTH);
         loginFrame.add(loginPanel, BorderLayout.CENTER);
 
         // Center the frame on the screen
@@ -60,8 +110,50 @@ public class LogInPanel {
         loginFrame.setVisible(true);
     }
 
+    private void showLoginDialog(String message, String username, boolean isAdmin) {
+        JDialog dialog = new JDialog(loginFrame, "Login Successful", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(300, 150);
+        dialog.setLocationRelativeTo(loginFrame);
+
+        JLabel messageLabel = new JLabel(message, SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        dialog.add(messageLabel, BorderLayout.CENTER);
+
+        JButton continueButton = new JButton("Continue");
+        continueButton.setBackground(new Color(60, 179, 113));
+        continueButton.setForeground(Color.WHITE);
+        continueButton.setFont(new Font("Arial", Font.BOLD, 12));
+        continueButton.setFocusPainted(false);
+        continueButton.setBorderPainted(false);
+
+        continueButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                continueButton.setBackground(new Color(46, 139, 87));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                continueButton.setBackground(new Color(60, 179, 113));
+            }
+        });
+
+        continueButton.addActionListener(e -> {
+            dialog.dispose();
+            loginFrame.dispose();
+            if (isAdmin) {
+                new AdminCatalogueGUI(username);
+            } else {
+                new UserCatalogueGUI(username);
+            }
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(continueButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
+
     public static void main(String[] args) {
-        // Run the login panel
         SwingUtilities.invokeLater(LogInPanel::new);
     }
 }
