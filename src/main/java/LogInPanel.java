@@ -102,7 +102,7 @@ public class LogInPanel {
             // Show a confirmation dialog with "Thank you for browsing"
             int confirm = JOptionPane.showConfirmDialog(
                     loginFrame,
-                    "Thank you for browsing! Are you sure you want to exit?",
+                    "Thank you for stopping by! Are you sure you want to exit?",
                     "Exit",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.INFORMATION_MESSAGE,

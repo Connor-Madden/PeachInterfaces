@@ -299,6 +299,34 @@ public class ParseDatabase {
     return filtered;
   }
 
+  public static List<Map<String, Object>> searchItemsById(int id) {
+    List<Map<String, Object>> results = new ArrayList<>();
+    String selectQuery = "SELECT * FROM ClothingItems WHERE id = ?;";
+
+    try (Connection connection = DriverManager.getConnection(URL);
+         PreparedStatement pstmt = connection.prepareStatement(selectQuery)) {
+
+      pstmt.setInt(1, id); // Set the ID parameter
+      ResultSet resultSet = pstmt.executeQuery();
+
+      ResultSetMetaData metaData = resultSet.getMetaData();
+      int columnCount = metaData.getColumnCount();
+
+      while (resultSet.next()) {
+        Map<String, Object> rowMap = new HashMap<>();
+        for (int i = 1; i <= columnCount; i++) {
+          rowMap.put(metaData.getColumnName(i), resultSet.getObject(i));
+        }
+        results.add(rowMap);
+      }
+
+    } catch (SQLException error) {
+      error.printStackTrace();
+      System.out.println("Error: a SQLException has occurred. (searchItemsById)");
+    }
+    return results;
+  }
+
   // TESTING FUNCTIONS #############################################//
 
   // this is just for backend testing

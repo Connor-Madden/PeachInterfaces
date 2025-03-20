@@ -263,7 +263,16 @@ public class AdminCatalogueGUI {
 
     public void performSearch() {
         String searchText = searchField.getText().trim();
-        List<Map<String, Object>> results = ParseDatabase.searchItems(searchText);
+        List<Map<String, Object>> results;
+
+        // Check if the search text is numeric (indicating an ID search)
+        if (searchText.matches("\\d+")) {
+            int id = Integer.parseInt(searchText);
+            results = ParseDatabase.searchItemsById(id); // New method to search by ID
+        } else {
+            results = ParseDatabase.searchItems(searchText); // Existing method to search by name/description
+        }
+
         updateItemList(results);
     }
 
