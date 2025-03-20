@@ -58,10 +58,10 @@ To exit the application, simply click the **Exit** button.
 When logged in as an admin, you have access to the following features:  
 - **Add** a clothing item and its attributes to the catalogue (**Blue Button**).  
 - **Edit** an existing clothing item in the catalogue (**Yellow Button**).  
-- **Remove** a clothing item from the catalogue (**Crimson Red Button**).  
-- **Log Out** and return to the login page (**Bright Red Button**).  
+- **Remove** a clothing item from the catalogue (**Crimson Red Button**).   
 - **Search** for items in the catalogue for better management.  
-- **Filter** items in the catalogue to refine results.  
+- **Filter** items in the catalogue to refine results.
+- **Log Out** and return to the login page (**Bright Red Button**). 
 
 #### **User Privileges**  
 When logged in as a user, you can:  
@@ -72,8 +72,7 @@ When logged in as a user, you can:
 
 ## How to Test the Application 
 
-To switch to the testing branch and test the backend code (as the GUI is tested through regular use of the application), run the following command(s) in the project directory:  
-```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```
+To switch to the testing branch and test the backend code (as the GUI is tested through regular use of the application), run the following command(s) in the project directory:  ```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```
 
 ## Upcoming Features
 
