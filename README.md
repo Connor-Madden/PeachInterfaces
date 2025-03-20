@@ -9,7 +9,12 @@ The catalogue currently supports the following core functionalities for the Admi
 - **Delete items** from the catalogue
 - **Edit items** in the catalogue
 
-These functionalities are implemented within a functional GUI interface that includes at least five distinct fashion brands for variety. For more details on the brands, check out our [Figma](https://www.figma.com/design/UmCMeFAGiIxgV8TuBUHmbj/Peach-Interfaces?node-id=9-2&t=uSMTgTtrm3yoc0jZ-1) designs which include various catalogues featuring brands and the overall layout.
+The catalogue currently supports the following core functionalities for the User:
+- **Search for items** within the catalogue
+- **Apply filters** to refine search results
+- **Browse items** along with their images
+
+These functionalities are implemented within a visually upgraded GUI interface that includes at least five distinct fashion brands for variety with different clothing categories. For more details on the brands, check out our [Figma](https://www.figma.com/design/UmCMeFAGiIxgV8TuBUHmbj/Peach-Interfaces?node-id=9-2&t=uSMTgTtrm3yoc0jZ-1) designs which include various catalogues featuring brands and the overall layout.
 
 ## How-to-Run
 
@@ -21,7 +26,7 @@ These functionalities are implemented within a functional GUI interface that inc
 ### Steps
 
 1. **Open Terminal**:
-  Open Command Prompt or Git Bash.
+  Open a local Command Prompt or Git Bash.
 
 3. **Clone the Repository**:
   ```git clone https://github.com/Connor-Madden/PeachInterfaces.git```
@@ -33,29 +38,47 @@ These functionalities are implemented within a functional GUI interface that inc
   ```mvn clean install```
 
 6. **Launch the Application**:
-  ```mvn exec:java -Dexec.mainClass="csci2040u.catalogue.Fashion-Catalogue-Project"```
+  ```mvn exec:java```
 
-7. **Run the Application**:
-   Once the application is running, you can start using it with Admin privileges:
-   - Click the blue button to add a clothing item and its attributes to the catalogue.
-   - Click the yellow button to edit an existing clothing item in the catalogue.
-   - Click the **crimson red** button to remove a clothing item from the catalogue.
-   - Click the **bright red** button to exit the catalogue.
-     
+7. **Run the Application**
+   Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.
+
+   **Admin Credentials**:  
+   **Username**: `admin`  
+   **Password**: `adminpass`  
+
+   **User Credentials**:  
+   **Username**: `user`  
+   **Password**: `userpass`  
+
+   To exit the application, simply click the **Exit** button.  
+
+   **Admin Privileges**  
+   As an admin, you have access to the following features:  
+   **Add** a clothing item and its attributes to the catalogue (**Blue Button**).  
+   **Edit** an existing clothing item in the catalogue (**Yellow Button**).  
+   **Remove** a clothing item from the catalogue (**Crimson Red Button**).   
+   **Search** for items in the catalogue for better management.  
+   **Filter** items in the catalogue to refine results.
+   **Log Out** and return to the login page (**Bright Red Button**). 
+
+   **User Privileges**  
+   As a user, you can:
+   **Search** for clothing items to find what you like.  
+   **Filter** items in the catalogue to narrow your selection.
+   **Browse** images of each item.  
+   **Log Out** and return to the login page (**Bright Red Button**).  
+
+9. **Test the Application**
+   To switch to the testing branch and test the backend code, run the following command in the project directory:  
+   ```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```
+
 ## Upcoming Features
 
-### Iteration 2:
-- Upgrade the user interface for better usability and aesthetics (In Progress)
-- Display images of catalogue items (In Progress)
-- Implement search and filter functionality (In Testing)
-- **Authentication system:** 
-  - Log in (Todo)
-  - Log out (Todo)
-
 ### Iteration 3:
-- Further enhance the interface to make it visually appealing (Backlog)
-- Add product details pages (Backlog)
-- Implement the "show favourite items list" feature (Backlog)
+- Further enhance the interface to make it visually appealing (Todo)
+- Add product details pages (Todo)
+- Implement the "show favourite items list" feature (Todo)
 
 ## Contributors
 - Rayan Alam | Front-End Lead
@@ -63,5 +86,3 @@ These functionalities are implemented within a functional GUI interface that inc
 - Adrian Ramirez | Back-End Lead
 - Maryam Baz | Technical Lead
 - Thaddeus Baturensky | Software Quality Lead
-
-
