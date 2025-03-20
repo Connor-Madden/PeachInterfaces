@@ -45,12 +45,12 @@ These functionalities are implemented within a visually upgraded GUI interface t
 Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.  
 
 - **Admin Credentials**:  
-  - **Username**: `admin`  
-  - **Password**: `adminpass`  
+  - **Username**: `admin`.  
+  - **Password**: `adminpass`. 
 
 - **User Credentials**:  
-  - **Username**: `user`  
-  - **Password**: `userpass`
+  - **Username**: `user`.  
+  - **Password**: `userpass`.
  
 To exit the application, simply click the **Exit** button.  
 
