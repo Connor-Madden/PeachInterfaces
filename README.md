@@ -16,7 +16,7 @@ The catalogue currently supports the following core functionalities for the User
 
 These functionalities are implemented within a visually upgraded GUI interface that includes at least five distinct fashion brands for variety with different clothing categories. For more details on the brands, check out our [Figma](https://www.figma.com/design/UmCMeFAGiIxgV8TuBUHmbj/Peach-Interfaces?node-id=9-2&t=uSMTgTtrm3yoc0jZ-1) designs which include various catalogues featuring brands and the overall layout.
 
-## How-to-Run
+## How to Build and Run the Application
 
 ### Prerequisites
 - Java Development Kit (JDK 23 or later): https://www.oracle.com/java/technologies/javase/jdk23-archive-downloads.html
@@ -40,41 +40,40 @@ These functionalities are implemented within a visually upgraded GUI interface t
 6. **Launch the Application**:
   ```mvn exec:java```
 
-7. **Run the Application**:
-   
-   Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.
+## How to Use the Application 
 
-   **Admin Credentials**:  
-   **Username**: `admin`  
-   **Password**: `adminpass`  
+Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.  
 
-   **User Credentials**:  
-   **Username**: `user`  
-   **Password**: `userpass`  
+- **Admin Credentials**:  
+  - **Username**: `admin`  
+  - **Password**: `adminpass`  
 
-   To exit the application, simply click the **Exit** button.  
+- **User Credentials**:  
+  - **Username**: `user`  
+  - **Password**: `userpass`
+ 
+To exit the application, simply click the **Exit** button.  
 
-   As an admin, you have access to the following features:
-   
-   **Add** a clothing item and its attributes to the catalogue (**Blue Button**).  
-   **Edit** an existing clothing item in the catalogue (**Yellow Button**).  
-   **Remove** a clothing item from the catalogue (**Crimson Red Button**).   
-   **Search** for items in the catalogue for better management.  
-   **Filter** items in the catalogue to refine results.
-   **Log Out** and return to the login page (**Bright Red Button**). 
+#### **Admin Privileges**  
+When logged in as an admin, you have access to the following features:  
+- **Add** a clothing item and its attributes to the catalogue (**Blue Button**).  
+- **Edit** an existing clothing item in the catalogue (**Yellow Button**).  
+- **Remove** a clothing item from the catalogue (**Crimson Red Button**).  
+- **Log Out** and return to the login page (**Bright Red Button**).  
+- **Search** for items in the catalogue for better management.  
+- **Filter** items in the catalogue to refine results.  
 
-   As a user, you can:
-   
-   **Search** for clothing items to find what you like.  
-   **Filter** items in the catalogue to narrow your selection.
-   
-   **Browse** images of each item.  
-   **Log Out** and return to the login page (**Bright Red Button**).  
+#### **User Privileges**  
+When logged in as a user, you can:  
+- **Search** for clothing items to find what you like.  
+- **Filter** items in the catalogue to narrow your selection.  
+- **Browse** images of each item.  
+- **Log Out** and return to the login page (**Bright Red Button**).
 
-9. **Test the Application**:
+## How to Test the Application 
 
-   To switch to the testing branch and test the backend code, run the following command(s) in the project directory:  
-   ```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```
+To switch to the testing branch and test the backend code (as the GUI is tested through regular use of the application), run the following command(s) in the project directory:  
+```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```
 
 ## Upcoming Features
 
