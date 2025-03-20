@@ -52,8 +52,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- Make sure to specify the correct package here -->
-                    <mainClass>com.example.LogInPanel</mainClass> <!-- Replace with your actual package -->
+                         <mainClass>LogInPanel</mainClass>
                 </configuration>
             </plugin>
         </plugins>
