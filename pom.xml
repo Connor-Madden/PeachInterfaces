@@ -35,8 +35,8 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <finalName>maven-unit-test</finalName>
+   <build>
+        <finalName>fashion-catalogue</finalName>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -44,7 +44,7 @@
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <id>run-Application</id>
+                        <id>run-LogInPanel</id>
                         <phase>package</phase>
                         <goals>
                             <goal>java</goal>
@@ -52,7 +52,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>LogInPanel</mainClass>
+                    <!-- Make sure to specify the correct package here -->
+                    <mainClass>com.example.LogInPanel</mainClass> <!-- Replace with your actual package -->
                 </configuration>
             </plugin>
         </plugins>
