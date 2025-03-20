@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="lab02" />
         <module name="CSCI 2040U" />
+        <module name="catalogue" />
       </profile>
     </annotationProcessing>
   </component>

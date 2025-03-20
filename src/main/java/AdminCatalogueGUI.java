@@ -4,6 +4,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -129,24 +135,22 @@ public class AdminCatalogueGUI {
         bottomPanel.setBackground(new Color(255, 235, 205)); // Light Orange
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding
 
-// Text label (tagline) - Aligned to the left
+        // Text label (tagline) - Aligned to the left
         JLabel bottomTextLabel = new JLabel("© 2025 Peach Interfaces. Freshly Picked Clothing For You");
         bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
         bottomTextLabel.setForeground(new Color(60, 179, 113));
         bottomTextLabel.setHorizontalAlignment(JLabel.LEFT); // Align text to the left
 
-// Add hover effect to underline the tagline
+        // Add hover effect to underline the tagline
         bottomTextLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                // Add underline when hovered
                 bottomTextLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 16));
                 bottomTextLabel.setText("<html><u>" + bottomTextLabel.getText() + "</u></html>");
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                // Remove underline when not hovered
                 bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
                 bottomTextLabel.setText(bottomTextLabel.getText().replaceAll("<[^>]*>", "")); // Remove HTML tags
             }
@@ -154,7 +158,7 @@ public class AdminCatalogueGUI {
 
         bottomPanel.add(bottomTextLabel, BorderLayout.WEST); // Add tagline to WEST region
 
-// Buttons Panel (EAST region)
+        // Buttons Panel (EAST region)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5)); // Align buttons to the right
         buttonPanel.setBackground(new Color(255, 235, 205)); // Light Orange background
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Add padding
@@ -186,7 +190,7 @@ public class AdminCatalogueGUI {
 
         bottomPanel.add(buttonPanel, BorderLayout.EAST); // Add buttons to EAST region
 
-// Add the bottom panel to the frame (SOUTH region)
+        // Add the bottom panel to the frame (SOUTH region)
         frame.add(bottomPanel, BorderLayout.SOUTH);
 
         // Load items into the list
@@ -290,14 +294,27 @@ public class AdminCatalogueGUI {
         JComboBox<String> typeField = new JComboBox<>(itemTypes);
         JTextField sizeField = new JTextField();
         JTextField descriptionField = new JTextField();
+        JButton imageButton = new JButton("Select Image");
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PNG Images", "png"));
+
+        imageButton.addActionListener(e -> {
+            int returnValue = fileChooser.showOpenDialog(frame);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                imageButton.setText(selectedFile.getName());
+            }
+        });
+
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.add(new JLabel("Name:")); panel.add(nameField);
         panel.add(new JLabel("Color:")); panel.add(colorField);
         panel.add(new JLabel("Type:")); panel.add(typeField);
         panel.add(new JLabel("Size:")); panel.add(sizeField);
         panel.add(new JLabel("Description:")); panel.add(descriptionField);
+        panel.add(new JLabel("Image:")); panel.add(imageButton);
 
         int result = JOptionPane.showConfirmDialog(frame, panel, "Add Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (result == JOptionPane.OK_OPTION) {
@@ -307,8 +324,29 @@ public class AdminCatalogueGUI {
             newItem.put("itemType", typeField.getSelectedItem().toString());
             newItem.put("size", sizeField.getText());
             newItem.put("description", descriptionField.getText());
+
+            if (fileChooser.getSelectedFile() != null) {
+                String imagePath = saveImageToDirectory(fileChooser.getSelectedFile());
+                newItem.put("imageUrl", imagePath);
+            }
+
             ParseDatabase.addClothingItem(newItem);
             loadClothingItems();
+        }
+    }
+
+    private String saveImageToDirectory(File imageFile) {
+        String destinationDirectory = "src/main/images/";
+        String fileName = imageFile.getName();
+        Path destinationPath = Paths.get(destinationDirectory + fileName);
+
+        try {
+            Files.copy(imageFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
+            return destinationPath.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Failed to save the image.", "Error", JOptionPane.ERROR_MESSAGE);
+            return null;
         }
     }
 
@@ -333,6 +371,7 @@ public class AdminCatalogueGUI {
                 existingItem.put("itemType", (String) item.get("itemType"));
                 existingItem.put("size", (String) item.get("size"));
                 existingItem.put("description", (String) item.get("description"));
+                existingItem.put("imageUrl", (String) item.get("imageUrl")); // Include image URL
                 break;
             }
         }
@@ -344,14 +383,28 @@ public class AdminCatalogueGUI {
         JComboBox<String> typeField = new JComboBox<>(itemTypes);
         JTextField sizeField = new JTextField(existingItem.get("size"));
         JTextField descriptionField = new JTextField(existingItem.get("description"));
+        JButton imageButton = new JButton(existingItem.get("imageUrl") != null ? existingItem.get("imageUrl") : "Select Image");
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+        // File chooser for image selection
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("PNG Images", "png"));
+
+        imageButton.addActionListener(e -> {
+            int returnValue = fileChooser.showOpenDialog(frame);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                imageButton.setText(selectedFile.getName()); // Update button text with file name
+            }
+        });
+
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         panel.add(new JLabel("Name:")); panel.add(nameField);
         panel.add(new JLabel("Color:")); panel.add(colorField);
         panel.add(new JLabel("Type:")); panel.add(typeField);
         panel.add(new JLabel("Size:")); panel.add(sizeField);
         panel.add(new JLabel("Description:")); panel.add(descriptionField);
+        panel.add(new JLabel("Image:")); panel.add(imageButton);
 
         int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (result == JOptionPane.OK_OPTION) {
@@ -361,6 +414,15 @@ public class AdminCatalogueGUI {
             updatedItem.put("itemType", typeField.getSelectedItem().toString());
             updatedItem.put("size", sizeField.getText());
             updatedItem.put("description", descriptionField.getText());
+
+            // Add image path if a file was selected
+            if (fileChooser.getSelectedFile() != null) {
+                String imagePath = saveImageToDirectory(fileChooser.getSelectedFile());
+                updatedItem.put("imageUrl", imagePath);
+            } else if (existingItem.get("imageUrl") != null) {
+                updatedItem.put("imageUrl", existingItem.get("imageUrl")); // Retain existing image if no new one is selected
+            }
+
             ParseDatabase.editClothingItem(id, updatedItem);
             loadClothingItems();
         }

@@ -27,18 +27,7 @@ public class UserCatalogueGUI {
     private Icon clothingIcon;
 
     // Hardcoded mapping of item IDs to image paths
-    private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
 
-    static {
-        // Add item IDs and their corresponding image paths
-        ITEM_IMAGES.put(1, "src/main/images/Dress.png");
-        ITEM_IMAGES.put(2, "src/main/images/Roots.png");
-        ITEM_IMAGES.put(3, "src/main/images/Merrell.png");
-        ITEM_IMAGES.put(4, "src/main/images/Jeans.png");
-        ITEM_IMAGES.put(5, "src/main/images/Bracelet.png");
-        ITEM_IMAGES.put(6, "src/main/images/Puma.png");
-        ITEM_IMAGES.put(7, "src/main/images/Wallet.png");
-    }
 
     public UserCatalogueGUI(String username) {
         frame = new JFrame("User - Fashion and Clothing Catalogue");
@@ -277,15 +266,14 @@ public class UserCatalogueGUI {
             panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1));
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-            // Load image using item ID
-            int itemId = (int) item.get("id"); // Assuming the ID is stored as an integer
-            String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png"); // Use hardcoded image or default logo
+            // Load image from database
+            String imagePath = (String) item.get("imageUrl");
             ImageIcon icon = loadImage(imagePath);
 
             JLabel imageLabel = new JLabel(icon);
             imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Item name with simplified formatting
+            // Item name and details
             String itemName = (String) item.get("name");
             JLabel nameLabel = new JLabel(
                     "<html><div style='text-align: center; font-size: medium; font-weight: bold; color: #333;'>" +
@@ -294,7 +282,6 @@ public class UserCatalogueGUI {
                     JLabel.CENTER
             );
 
-            // Item details with simplified formatting
             JLabel detailsLabel = new JLabel(
                     "<html><div style='text-align: center; font-size: small; color: #555;'>" +
                             "<p style='margin: 2px 0;'><b>Color:</b> " + item.get("colour") + "</p>" +
@@ -305,39 +292,28 @@ public class UserCatalogueGUI {
                     JLabel.CENTER
             );
 
-            nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            detailsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
             panel.add(imageLabel);
-            panel.add(Box.createVerticalStrut(5)); // Add spacing between image and text
+            panel.add(Box.createVerticalStrut(5));
             panel.add(nameLabel);
             panel.add(detailsLabel);
-
-            // Add hover effect to the panel
-            panel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    panel.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 2)); // Green border on hover
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1)); // Restore original border
-                }
-            });
-
-            // Add click listener to open fullscreen
-            panel.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    ProductFullscreenViewer.openProductFullscreen(item, imagePath);
-                }
-            });
 
             itemPanel.add(panel);
         }
 
         itemPanel.revalidate();
         itemPanel.repaint();
+    }
+
+    private ImageIcon loadImage(String path) {
+        ImageIcon icon = null;
+        try {
+            icon = new ImageIcon(new ImageIcon(path).getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
+        } catch (Exception e) {
+            System.out.println("Image not found: " + path);
+            icon = new ImageIcon(new ImageIcon("src/main/images/Logo.png")
+                    .getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
+        }
+        return icon;
     }
 
 
@@ -414,23 +390,6 @@ public class UserCatalogueGUI {
         fullscreenFrame.setUndecorated(true); // Remove window decorations
     }
 
-
-
-    private ImageIcon loadImage(String path) {
-        ImageIcon icon = null;
-        try {
-            icon = new ImageIcon(new ImageIcon(path).getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
-        } catch (Exception e) {
-            System.out.println("Image not found: " + path);
-        }
-
-        if (icon == null || icon.getIconWidth() == -1) {
-            icon = new ImageIcon(new ImageIcon("src/main/images/Logo.png")
-                    .getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
-        }
-
-        return icon;
-    }
 
     private void updateItemWidth() {
         itemPanel.revalidate();

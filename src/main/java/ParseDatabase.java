@@ -3,21 +3,21 @@ import java.util.*;
 
 public class ParseDatabase {
   private static final String URL = "jdbc:sqlite:fashionDb.db";
-  // TODO: change hardcoded values: to use a single String array
   private static final String[] HashmapKeys = {
-      "id", "name", "colour", "itemType", "size", "description"};
+          "id", "name", "colour", "itemType", "size", "description", "imageUrl" // Added imageUrl
+  };
 
   public static void initializeDatabase() {
     String createTableSQL = "CREATE TABLE IF NOT EXISTS ClothingItems ("
-                            + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                            + "name TEXT, " // no longer unique: ask Adrian
-                            + "colour TEXT, "
-                            + "itemType TEXT, "
-                            + "size TEXT, "
-                            + "description TEXT);";
+            + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + "name TEXT, "
+            + "colour TEXT, "
+            + "itemType TEXT, "
+            + "size TEXT, "
+            + "description TEXT, "
+            + "imageUrl TEXT);"; // Added imageUrl column
 
-    String resetAutoIncrementSQL =
-        "DELETE FROM sqlite_sequence WHERE name = 'ClothingItems';";
+    String resetAutoIncrementSQL = "DELETE FROM sqlite_sequence WHERE name = 'ClothingItems';";
     String checkIfTableIsEmptySQL = "SELECT COUNT(*) FROM ClothingItems;";
 
     try (Connection connection = DriverManager.getConnection(URL);
@@ -37,8 +37,7 @@ public class ParseDatabase {
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println(
-          "Error: a SQLException has occured. (initializeDatabase)");
+      System.out.println("Error: a SQLException has occurred. (initializeDatabase)");
     }
   }
 
@@ -63,19 +62,14 @@ public class ParseDatabase {
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println(
-          "Error: a SQLException has occured. (getClothingItems)");
+      System.out.println("Error: a SQLException has occurred. (getClothingItems)");
     }
     return clothingList;
   }
 
-  // add a new piece of clothing to the database
-  // ADMIN FUNCTION
   public static void addClothingItem(Map<String, String> newClothing) {
-    // TODO: validate entered data before adding to database
-
-    String insertSQL = "INSERT INTO ClothingItems (name, colour, itemType, "
-                       + "size, description) VALUES (?, ?, ?, ?, ?)";
+    String insertSQL = "INSERT INTO ClothingItems (name, colour, itemType, size, description, imageUrl) "
+            + "VALUES (?, ?, ?, ?, ?, ?)";
 
     try (Connection connection = DriverManager.getConnection(URL);
          PreparedStatement pstmt = connection.prepareStatement(insertSQL)) {
@@ -85,22 +79,18 @@ public class ParseDatabase {
       pstmt.setString(3, newClothing.get("itemType"));
       pstmt.setString(4, newClothing.get("size"));
       pstmt.setString(5, newClothing.get("description"));
+      pstmt.setString(6, newClothing.get("imageUrl")); // Add imageUrl
       pstmt.executeUpdate();
       System.out.println("Clothing item added successfully!");
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println(
-          "Error: a SQLException has occured. (addClothingItem)");
+      System.out.println("Error: a SQLException has occurred. (addClothingItem)");
     }
   }
 
-  // edits a new piece of clothing in the database
-  // ADMIN FUNCTION
-  public static void editClothingItem(int id,
-                                      Map<String, String> updatedClothing) {
-    String updateSQL = "UPDATE ClothingItems SET name = ?, colour = ?, "
-                       + "itemType = ?, size = ?, description = ? WHERE id = ?";
+  public static void editClothingItem(int id, Map<String, String> updatedClothing) {
+    String updateSQL = "UPDATE ClothingItems SET name = ?, colour = ?, itemType = ?, size = ?, description = ?, imageUrl = ? WHERE id = ?";
 
     try (Connection connection = DriverManager.getConnection(URL);
          PreparedStatement pstmt = connection.prepareStatement(updateSQL)) {
@@ -110,16 +100,16 @@ public class ParseDatabase {
       pstmt.setString(3, updatedClothing.get("itemType"));
       pstmt.setString(4, updatedClothing.get("size"));
       pstmt.setString(5, updatedClothing.get("description"));
-      pstmt.setInt(6, id);
+      pstmt.setString(6, updatedClothing.get("imageUrl")); // Add imageUrl
+      pstmt.setInt(7, id);
       int rowsAffected = pstmt.executeUpdate();
       System.out.println(rowsAffected > 0
-                             ? "Clothing item updated successfully!"
-                             : "No item found with the given ID.");
+              ? "Clothing item updated successfully!"
+              : "No item found with the given ID.");
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println(
-          "Error: a SQLException has occured. (editClothingItem)");
+      System.out.println("Error: a SQLException has occurred. (editClothingItem)");
     }
   }
 
