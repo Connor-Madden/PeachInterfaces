@@ -54,7 +54,8 @@ These functionalities are implemented within a visually upgraded GUI interface t
 
    To exit the application, simply click the **Exit** button.  
 
-   As an admin, you have access to the following features:  
+   As an admin, you have access to the following features:
+   
    **Add** a clothing item and its attributes to the catalogue (**Blue Button**).  
    **Edit** an existing clothing item in the catalogue (**Yellow Button**).  
    **Remove** a clothing item from the catalogue (**Crimson Red Button**).   
@@ -66,6 +67,7 @@ These functionalities are implemented within a visually upgraded GUI interface t
    
    **Search** for clothing items to find what you like.  
    **Filter** items in the catalogue to narrow your selection.
+   
    **Browse** images of each item.  
    **Log Out** and return to the login page (**Bright Red Button**).  
 
