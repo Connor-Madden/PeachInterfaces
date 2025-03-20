@@ -40,7 +40,7 @@ These functionalities are implemented within a visually upgraded GUI interface t
 6. **Launch the Application**:
   ```mvn exec:java```
 
-7. **Run the Application**
+7. **Run the Application**:
    
    Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.
 
@@ -63,6 +63,7 @@ These functionalities are implemented within a visually upgraded GUI interface t
    **Log Out** and return to the login page (**Bright Red Button**). 
 
    As a user, you can:
+   
    **Search** for clothing items to find what you like.  
    **Filter** items in the catalogue to narrow your selection.
    **Browse** images of each item.  
