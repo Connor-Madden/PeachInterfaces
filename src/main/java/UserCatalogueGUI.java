@@ -47,6 +47,9 @@ public class UserCatalogueGUI {
         frame.setLayout(new BorderLayout());
         frame.getContentPane().setBackground(Color.WHITE);
 
+        // Set the frame to full screen
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Open in full screen mode
+
         // Load and resize clothing icon
         ImageIcon originalIcon = new ImageIcon("src/main/java/ClothingIcon.png");
         Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
@@ -136,14 +139,32 @@ public class UserCatalogueGUI {
         bottomPanel.setBackground(new Color(255, 235, 205)); // Light Orange
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding
 
-        // Text label
+// Text label (centered)
         JLabel bottomTextLabel = new JLabel("© 2025 Peach Interfaces. Freshly Picked Clothing For You");
         bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
         bottomTextLabel.setForeground(new Color(60, 179, 113));
         bottomTextLabel.setHorizontalAlignment(JLabel.CENTER);
-        bottomPanel.add(bottomTextLabel, BorderLayout.CENTER);
 
-        // Log Out button
+        // Add hover effect to underline the tagline
+        bottomTextLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                // Add underline when hovered
+                bottomTextLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 16));
+                bottomTextLabel.setText("<html><u>" + bottomTextLabel.getText() + "</u></html>");
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // Remove underline when not hovered
+                bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
+                bottomTextLabel.setText(bottomTextLabel.getText().replaceAll("<[^>]*>", "")); // Remove HTML tags
+            }
+        });
+
+        bottomPanel.add(bottomTextLabel, BorderLayout.CENTER); // Add to CENTER region
+
+// Log Out button
         JButton logOutButton = new JButton("Log Out");
         logOutButton.setFont(new Font("Arial", Font.BOLD, 14));
         logOutButton.setBackground(new Color(255, 0, 0)); // Red-Orange
@@ -151,7 +172,7 @@ public class UserCatalogueGUI {
         logOutButton.setFocusPainted(false);
         logOutButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15)); // Add padding
 
-        // Hover effect for Log Out button
+// Hover effect for Log Out button
         logOutButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -164,7 +185,7 @@ public class UserCatalogueGUI {
             }
         });
 
-        // Log Out button with confirmation dialog
+// Log Out button with confirmation dialog
         logOutButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(
                     frame,
@@ -181,13 +202,10 @@ public class UserCatalogueGUI {
             }
         });
 
-        // Add the Log Out button to the bottom panel
-        JPanel logOutPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        logOutPanel.setBackground(new Color(255, 235, 205)); // Match bottom panel color
-        logOutPanel.add(logOutButton);
-        bottomPanel.add(logOutPanel, BorderLayout.EAST);
+// Add the Log Out button to the bottom panel (EAST region)
+        bottomPanel.add(logOutButton, BorderLayout.EAST);
 
-        // Add the bottom panel to the frame
+// Add the bottom panel to the frame
         frame.add(bottomPanel, BorderLayout.SOUTH);
 
         // Load initial items

@@ -8,14 +8,20 @@ public class LogInPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JCheckBox showPasswordCheckbox;
+    private Icon clothingIcon;
 
     public LogInPanel() {
         // Create the login frame
-        loginFrame = new JFrame("Login/Logout");
+        loginFrame = new JFrame("Login/Logout - Fashion and Clothing Catalogue");
         loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         loginFrame.setSize(450, 300);
         loginFrame.setLayout(new BorderLayout());
         loginFrame.setResizable(false); // Prohibit full screen
+
+        // Load and resize clothing icon
+        ImageIcon originalIcon = new ImageIcon("src/main/java/ClothingIcon.png");
+        Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+        clothingIcon = new ImageIcon(scaledImage);
 
         // Create the top panel for the logo and text
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -92,7 +98,22 @@ public class LogInPanel {
         exitButton.setForeground(Color.WHITE);
         exitButton.setFocusPainted(false);
         exitButton.setFont(new Font("Arial", Font.BOLD, 12));
-        exitButton.addActionListener(e -> System.exit(0));
+        exitButton.addActionListener(e -> {
+            // Show a confirmation dialog with "Thank you for browsing"
+            int confirm = JOptionPane.showConfirmDialog(
+                    loginFrame,
+                    "Thank you for browsing! Are you sure you want to exit?",
+                    "Exit",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    clothingIcon
+            );
+
+            // If the user confirms, exit the application
+            if (confirm == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
 
         buttonPanel.add(loginButton);
         buttonPanel.add(exitButton);
