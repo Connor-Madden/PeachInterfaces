@@ -41,6 +41,7 @@ These functionalities are implemented within a visually upgraded GUI interface t
   ```mvn exec:java```
 
 7. **Run the Application**
+   
    Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.
 
    **Admin Credentials**:  
@@ -53,7 +54,6 @@ These functionalities are implemented within a visually upgraded GUI interface t
 
    To exit the application, simply click the **Exit** button.  
 
-   **Admin Privileges**  
    As an admin, you have access to the following features:  
    **Add** a clothing item and its attributes to the catalogue (**Blue Button**).  
    **Edit** an existing clothing item in the catalogue (**Yellow Button**).  
@@ -62,15 +62,15 @@ These functionalities are implemented within a visually upgraded GUI interface t
    **Filter** items in the catalogue to refine results.
    **Log Out** and return to the login page (**Bright Red Button**). 
 
-   **User Privileges**  
    As a user, you can:
    **Search** for clothing items to find what you like.  
    **Filter** items in the catalogue to narrow your selection.
    **Browse** images of each item.  
    **Log Out** and return to the login page (**Bright Red Button**).  
 
-9. **Test the Application**
-   To switch to the testing branch and test the backend code, run the following command in the project directory:  
+9. **Test the Application**:
+
+   To switch to the testing branch and test the backend code, run the following command(s) in the project directory:  
    ```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```
 
 ## Upcoming Features
