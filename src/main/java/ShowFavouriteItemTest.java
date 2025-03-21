@@ -37,24 +37,32 @@ public class ShowFavouriteItemTest {
     assertArrayEquals(new int[]{5, 10}, favouriteIDs);
   }
 
+  // Test adding a favorite item when the user has no previous favorites
+  @Test
+  public void testAddFavouriteItemToEmptyList() {
+    db.addFavourite("user", 7);
+    int[] favouriteIDs = db.getFavourites("user");
+    assertArrayEquals(new int[]{7}, favouriteIDs);
+  }
+
   //////////////////// "REPEAT"  /////////////////
 
-//  @Test
-//  public void testAddDuplicateFavouriteItem() {
-//    db.addFavourite("user", 5);
-//    db.addFavourite("user", 5); // Add the same item again
-//
-//    int[] favouriteIDs = db.getFavourites("user");
-//    assertArrayEquals(new int[]{5, 5}, favouriteIDs); // Should allow duplicates
-//  }
-//
-//  @Test(expected = IllegalArgumentException.class)
-//  public void testAddFavouriteItemWithNullUser() {
-//    db.addFavourite(null, 5); // Should throw an exception
-//  }
-//
-//  @Test(expected = IllegalArgumentException.class)
-//  public void testGetFavouritesWithNullUser() {
-//    db.getFavourites(null); // Should throw an exception
-//  }
+  @Test
+  public void testAddDuplicateFavouriteItem() {
+    db.addFavourite("user", 5);
+    db.addFavourite("user", 5); // Add the same item again
+
+    int[] favouriteIDs = db.getFavourites("user");
+    assertArrayEquals(new int[]{5, 5}, favouriteIDs); // Should allow duplicates
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAddFavouriteItemWithNullUser() {
+    db.addFavourite(null, 5); // Should throw an exception
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testGetFavouritesWithNullUser() {
+    db.getFavourites(null); // Should throw an exception
+  }
 }
