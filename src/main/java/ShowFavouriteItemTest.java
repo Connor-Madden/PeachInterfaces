@@ -53,7 +53,7 @@ public class ShowFavouriteItemTest {
     db.removeFavourite("user", 5); // Remove item 5
 
     int[] favouriteIDs = db.getFavourites("user");
-    assertArrayEquals(new int[]{10}, favouriteIDs); // Item 5 removed, 10 should remain
+    assertArrayEquals(new int[]{10}, favouriteIDs); // Item 5 removed, item 10 should remain
   }
 
   //////////////////// "REPEAT"  /////////////////
