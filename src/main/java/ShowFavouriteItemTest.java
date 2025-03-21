@@ -6,6 +6,8 @@ public class ShowFavouriteItemTest {
 
   private UserDatabase db;
 
+  //////////////////// "RED"  /////////////////
+
   // setup the database
   @Before
   public void setUp() {
@@ -34,4 +36,25 @@ public class ShowFavouriteItemTest {
     int[] favouriteIDs = db.getFavourites("user");
     assertArrayEquals(new int[]{5, 10}, favouriteIDs);
   }
+
+  //////////////////// "REPEAT"  /////////////////
+
+//  @Test
+//  public void testAddDuplicateFavouriteItem() {
+//    db.addFavourite("user", 5);
+//    db.addFavourite("user", 5); // Add the same item again
+//
+//    int[] favouriteIDs = db.getFavourites("user");
+//    assertArrayEquals(new int[]{5, 5}, favouriteIDs); // Should allow duplicates
+//  }
+//
+//  @Test(expected = IllegalArgumentException.class)
+//  public void testAddFavouriteItemWithNullUser() {
+//    db.addFavourite(null, 5); // Should throw an exception
+//  }
+//
+//  @Test(expected = IllegalArgumentException.class)
+//  public void testGetFavouritesWithNullUser() {
+//    db.getFavourites(null); // Should throw an exception
+//  }
 }
