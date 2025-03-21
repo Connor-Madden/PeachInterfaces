@@ -45,6 +45,17 @@ public class ShowFavouriteItemTest {
     assertArrayEquals(new int[]{7}, favouriteIDs);
   }
 
+  // Test removing a favorite item from user's list
+  @Test
+  public void testRemoveFavouriteItem() {
+    db.addFavourite("user", 5);
+    db.addFavourite("user", 10);
+    db.removeFavourite("user", 5); // Remove item 5
+
+    int[] favouriteIDs = db.getFavourites("user");
+    assertArrayEquals(new int[]{10}, favouriteIDs); // Item 5 removed, 10 should remain
+  }
+
   //////////////////// "REPEAT"  /////////////////
 
   @Test
