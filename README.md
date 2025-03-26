@@ -77,9 +77,10 @@ To switch to the testing branch and test the backend code (as the GUI is tested 
 ## Upcoming Features
 
 ### Iteration 3:
-- Further enhance the interface to make it visually appealing (Todo).
-- Add an extensive product details pages (Todo).
-- Implement the "show favourite items list" feature (Todo).
+- Modernizing the Java Swing GUI for a more trendy and modern look (In progress).
+- Enabling full-screen viewing of item images for an enhanced experience (In progress).
+- Add an extensive product details pages (In progress).
+- Implement the "show favourite items list" feature for easier access (In progress).
 
 ## Contributors
 - Rayan Alam | Front-End Lead
