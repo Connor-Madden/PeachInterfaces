@@ -1,80 +1,86 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
 public class AdminCatalogueGUI {
     private JFrame frame;
-    public DefaultListModel<String> itemListModel;
-    public JList<String> itemList;
-    private Icon clothingIcon;
+    private JPanel itemPanel;
+    private JScrollPane scrollPane;
+    private JTextField searchField;
+    private JButton searchButton;
+    private JComboBox<String> filterDropdown;
     private JLabel slidingTextLabel;
     private Timer slideOutTimer;
     private Timer slideInTimer;
     private int slidingTextWidth = 0;
-    private final int SLIDING_TEXT_MAX_WIDTH = 150; // Maximum width of the sliding text
-    private JTextField searchField;
-    private JComboBox<String> filterDropdown;
+    private final int SLIDING_TEXT_MAX_WIDTH = 150;
+    private Icon clothingIcon;
+    private JPanel selectedItemPanel = null;
+    private Color defaultPanelBorderColor = new Color(224, 224, 224);
+    private Color hoverPanelBorderColor = new Color(60, 179, 113);
+    private Color selectedPanelBorderColor = new Color(0, 0, 255);
+    private Map<String, Object> selectedItem = null;
+
+    private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
+    static {
+        ITEM_IMAGES.put(1, "src/main/images/Dress.png");
+        ITEM_IMAGES.put(2, "src/main/images/Roots.png");
+        ITEM_IMAGES.put(3, "src/main/images/Merrell.png");
+        ITEM_IMAGES.put(4, "src/main/images/Jeans.png");
+        ITEM_IMAGES.put(5, "src/main/images/Bracelet.png");
+        ITEM_IMAGES.put(6, "src/main/images/Puma.png");
+        ITEM_IMAGES.put(7, "src/main/images/Wallet.png");
+    }
 
     public AdminCatalogueGUI(String username) {
         frame = new JFrame("Admin - Fashion and Clothing Catalogue");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(900, 700);
         frame.setLayout(new BorderLayout());
+        frame.getContentPane().setBackground(Color.WHITE);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        // Set the frame to full screen
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Open in full screen mode
-
-        // Load and resize clothing icon
         ImageIcon originalIcon = new ImageIcon("src/main/java/ClothingIcon.png");
         Image scaledImage = originalIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
         clothingIcon = new ImageIcon(scaledImage);
 
-        // Set background color
-        frame.getContentPane().setBackground(Color.WHITE);
+        // Top Panel
+        JPanel topPanel = new JPanel(new GridBagLayout());
+        topPanel.setBackground(new Color(255, 235, 205));
 
-        // --------------- TOP PANEL -------------------
-        JPanel topPanel = new JPanel(new GridBagLayout()); // Use GridBagLayout for precise control
-        topPanel.setBackground(new Color(255, 235, 205)); // Light Orange
-
-        // --------------- LOGO PANEL (Left Side) -------------------
+        // Logo Panel
         JPanel logoPanel = new JPanel();
         logoPanel.setBackground(new Color(255, 235, 205));
-        logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS)); // Use BoxLayout for flexible sizing
+        logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS));
 
         String logoPath = "src/main/images/Logo.png";
         ImageIcon logoIcon = new ImageIcon(new ImageIcon(logoPath).getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
         JLabel logoLabel = new JLabel(logoIcon);
         logoPanel.add(logoLabel);
 
-        // Panel for sliding text
         JPanel slidingTextPanel = new JPanel();
         slidingTextPanel.setBackground(new Color(255, 235, 205));
         slidingTextPanel.setLayout(new BoxLayout(slidingTextPanel, BoxLayout.X_AXIS));
-        slidingTextPanel.setPreferredSize(new Dimension(0, 50)); // Initially hidden
+        slidingTextPanel.setPreferredSize(new Dimension(0, 50));
 
-        // Sliding text label
         slidingTextLabel = new JLabel("Peach Interfaces");
         slidingTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
         slidingTextLabel.setForeground(new Color(60, 179, 113));
         slidingTextPanel.add(slidingTextLabel);
         logoPanel.add(slidingTextPanel);
 
-        // Add logoPanel to topPanel with constraints
         GridBagConstraints gbcLogo = new GridBagConstraints();
         gbcLogo.gridx = 0;
         gbcLogo.gridy = 0;
-        gbcLogo.weightx = 0; // Do not expand horizontally
-        gbcLogo.anchor = GridBagConstraints.WEST; // Anchor to the left
-        gbcLogo.insets = new Insets(0, 10, 0, 10); // Add some padding
+        gbcLogo.weightx = 0;
+        gbcLogo.anchor = GridBagConstraints.WEST;
+        gbcLogo.insets = new Insets(0, 10, 0, 10);
         topPanel.add(logoPanel, gbcLogo);
 
-        // --------------- SEARCH & FILTER PANEL (Center) -------------------
+        // Search Panel
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         searchPanel.setBackground(new Color(255, 235, 205));
 
@@ -82,9 +88,9 @@ public class AdminCatalogueGUI {
         searchField.setFont(new Font("Arial", Font.PLAIN, 16));
         searchField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        JButton searchButton = new JButton("Search");
+        searchButton = new JButton("Search");
         searchButton.setFont(new Font("Arial", Font.BOLD, 14));
-        searchButton.setBackground(new Color(60, 179, 113)); // Green
+        searchButton.setBackground(new Color(60, 179, 113));
         searchButton.setForeground(Color.WHITE);
         searchButton.setFocusPainted(false);
 
@@ -99,143 +105,101 @@ public class AdminCatalogueGUI {
         searchPanel.add(new JLabel("Filter: "));
         searchPanel.add(filterDropdown);
 
-        // Add searchPanel to topPanel with constraints
         GridBagConstraints gbcSearch = new GridBagConstraints();
         gbcSearch.gridx = 1;
         gbcSearch.gridy = 0;
-        gbcSearch.weightx = 1; // Expand to fill remaining space
-        gbcSearch.fill = GridBagConstraints.HORIZONTAL; // Fill horizontally
-        gbcSearch.anchor = GridBagConstraints.CENTER; // Anchor to the center
+        gbcSearch.weightx = 1;
+        gbcSearch.fill = GridBagConstraints.HORIZONTAL;
+        gbcSearch.anchor = GridBagConstraints.CENTER;
         topPanel.add(searchPanel, gbcSearch);
 
-        // Add the top panel to the frame (NORTH region)
         frame.add(topPanel, BorderLayout.NORTH);
 
-        // Item List
-        itemListModel = new DefaultListModel<>();
-        itemList = new JList<>(itemListModel);
-        itemList.setFont(new Font("Arial", Font.PLAIN, 14));
-        itemList.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        itemList.setBackground(new Color(255, 235, 205)); // Light Orange background for the list
-        itemList.setOpaque(true); // Ensure the background is visible
-
-        JScrollPane scrollPane = new JScrollPane(itemList);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 4)); // Green border with 2px thickness
-        scrollPane.getViewport().setBackground(new Color(255, 235, 205)); // Light Orange background for the scroll pane
+        // Item Grid
+        itemPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        itemPanel.setBackground(Color.WHITE);
+        scrollPane = new JScrollPane(itemPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         frame.add(scrollPane, BorderLayout.CENTER);
 
-        // --------------- BOTTOM PANEL -------------------
+        // Bottom Panel
         JPanel bottomPanel = new JPanel(new BorderLayout());
-        bottomPanel.setBackground(new Color(255, 235, 205)); // Light Orange
-        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding
+        bottomPanel.setBackground(new Color(255, 235, 205));
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-// Text label (tagline) - Aligned to the left
         JLabel bottomTextLabel = new JLabel("© 2025 Peach Interfaces. Freshly Picked Clothing For You");
         bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
         bottomTextLabel.setForeground(new Color(60, 179, 113));
-        bottomTextLabel.setHorizontalAlignment(JLabel.LEFT); // Align text to the left
+        bottomTextLabel.setHorizontalAlignment(JLabel.LEFT);
 
-// Add hover effect to underline the tagline
         bottomTextLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                // Add underline when hovered
                 bottomTextLabel.setFont(new Font("Arial", Font.BOLD | Font.ITALIC, 16));
                 bottomTextLabel.setText("<html><u>" + bottomTextLabel.getText() + "</u></html>");
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                // Remove underline when not hovered
                 bottomTextLabel.setFont(new Font("Arial", Font.BOLD, 16));
-                bottomTextLabel.setText(bottomTextLabel.getText().replaceAll("<[^>]*>", "")); // Remove HTML tags
+                bottomTextLabel.setText(bottomTextLabel.getText().replaceAll("<[^>]*>", ""));
             }
         });
 
-        bottomPanel.add(bottomTextLabel, BorderLayout.WEST); // Add tagline to WEST region
+        bottomPanel.add(bottomTextLabel, BorderLayout.WEST);
 
-// Buttons Panel (EAST region)
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5)); // Align buttons to the right
-        buttonPanel.setBackground(new Color(255, 235, 205)); // Light Orange background
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Add padding
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        buttonPanel.setBackground(new Color(255, 235, 205));
 
         JButton addButton = new JButton("Add Item");
         JButton editButton = new JButton("Edit Item");
         JButton removeButton = new JButton("Remove Item");
         JButton exitButton = new JButton("Log Out");
 
-        addButton.setFont(new Font("Arial", Font.BOLD, 14));
-        editButton.setFont(new Font("Arial", Font.BOLD, 14));
-        removeButton.setFont(new Font("Arial", Font.BOLD, 14));
-        exitButton.setFont(new Font("Arial", Font.BOLD, 14));
-
-        addButton.setBackground(new Color(70, 130, 180)); // SteelBlue
-        editButton.setBackground(new Color(210, 105, 30)); // Chocolate
-        removeButton.setBackground(new Color(178, 34, 34)); // FireBrick
-        exitButton.setBackground(new Color(255, 0, 0)); // Red-Orange
-
-        addButton.setForeground(Color.WHITE);
-        editButton.setForeground(Color.WHITE);
-        removeButton.setForeground(Color.WHITE);
-        exitButton.setForeground(Color.WHITE);
+        styleButton(addButton, new Color(70, 130, 180));
+        styleButton(editButton, new Color(210, 105, 30));
+        styleButton(removeButton, new Color(178, 34, 34));
+        styleButton(exitButton, new Color(255, 0, 0));
 
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
         buttonPanel.add(removeButton);
         buttonPanel.add(exitButton);
 
-        bottomPanel.add(buttonPanel, BorderLayout.EAST); // Add buttons to EAST region
-
-// Add the bottom panel to the frame (SOUTH region)
+        bottomPanel.add(buttonPanel, BorderLayout.EAST);
         frame.add(bottomPanel, BorderLayout.SOUTH);
 
-        // Load items into the list
-        loadClothingItems();
+        loadClothingItems(ParseDatabase.getClothingItems());
 
-        // Button actions
         addButton.addActionListener(e -> addClothingItem());
         editButton.addActionListener(e -> editClothingItem());
         removeButton.addActionListener(e -> removeClothingItem());
-        exitButton.addActionListener(e -> exitApplication()); // Action for exit button
-
-        // Search and Filter actions
+        exitButton.addActionListener(e -> exitApplication());
         searchButton.addActionListener(e -> performSearch());
         filterDropdown.addActionListener(e -> performFilter());
         searchField.addActionListener(e -> performSearch());
 
-        // Initialize timers for sliding animation
-        slideOutTimer = new Timer(10, new ActionListener() { // Adjusted delay
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (slidingTextWidth < SLIDING_TEXT_MAX_WIDTH) {
-                    slidingTextWidth += 5; // Adjust speed of sliding
-                    slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
-                    slidingTextPanel.revalidate();
-                    slidingTextPanel.repaint(); // Ensure the panel is repainted
-                } else {
-                    slideOutTimer.stop();
-                }
+        slideOutTimer = new Timer(10, e -> {
+            if (slidingTextWidth < SLIDING_TEXT_MAX_WIDTH) {
+                slidingTextWidth += 5;
+                slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
+                slidingTextPanel.revalidate();
+            } else {
+                slideOutTimer.stop();
             }
         });
 
-        slideInTimer = new Timer(10, new ActionListener() { // Adjusted delay
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (slidingTextWidth > 0) {
-                    slidingTextWidth -= 5; // Adjust speed of sliding
-                    slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
-                    slidingTextPanel.revalidate();
-                    slidingTextPanel.repaint(); // Ensure the panel is repainted
-                } else {
-                    slideInTimer.stop();
-                }
+        slideInTimer = new Timer(10, e -> {
+            if (slidingTextWidth > 0) {
+                slidingTextWidth -= 5;
+                slidingTextPanel.setPreferredSize(new Dimension(slidingTextWidth, 50));
+                slidingTextPanel.revalidate();
+            } else {
+                slideInTimer.stop();
             }
         });
 
-        // Enable double buffering for smoother animation
-        slidingTextPanel.setDoubleBuffered(true);
-
-        // Add mouse listeners to the logo
         logoLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -253,46 +217,162 @@ public class AdminCatalogueGUI {
         frame.setVisible(true);
     }
 
-    public void loadClothingItems() {
-        itemListModel.clear();
-        List<Map<String, Object>> items = ParseDatabase.getClothingItems();
-        for (Map<String, Object> item : items) {
-            itemListModel.addElement("<html><body style='padding: 10px;'>" + item.get("id") + " | " + item.get("name") + " | " + item.get("colour") + " | " + item.get("itemType") + " | " + item.get("size") + " | " + item.get("description") + "</body></html>");
-        }
+    private void styleButton(JButton button, Color bgColor) {
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setBackground(bgColor);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(darkenColor(bgColor, 0.8f));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(bgColor);
+            }
+        });
     }
 
-    public void performSearch() {
+    private Color darkenColor(Color color, float factor) {
+        return new Color(
+                Math.max((int)(color.getRed() * factor), 0),
+                Math.max((int)(color.getGreen() * factor), 0),
+                Math.max((int)(color.getBlue() * factor), 0)
+        );
+    }
+
+    private void loadClothingItems(List<Map<String, Object>> items) {
+        itemPanel.removeAll();
+        selectedItemPanel = null;
+        selectedItem = null;
+
+        for (Map<String, Object> item : items) {
+            JPanel panel = new JPanel();
+            panel.setBackground(Color.WHITE);
+            panel.setBorder(BorderFactory.createLineBorder(defaultPanelBorderColor, 1));
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            panel.setPreferredSize(new Dimension(300, 400));
+
+            JPanel idPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            idPanel.setBackground(Color.WHITE);
+            int itemId = (int) item.get("id");
+            JLabel idLabel = new JLabel("ID: " + itemId);
+            idLabel.setFont(new Font("Arial", Font.BOLD, 12));
+            idLabel.setForeground(new Color(100, 100, 100));
+            idPanel.add(idLabel);
+            panel.add(idPanel);
+
+            String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
+            ImageIcon icon = loadImage(imagePath);
+
+            JLabel imageLabel = new JLabel(icon);
+            imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            String itemName = (String) item.get("name");
+            JLabel nameLabel = new JLabel(
+                    "<html><div style='text-align: center; font-size: medium; font-weight: bold; color: #333;'>" +
+                            itemName +
+                            "</div></html>",
+                    JLabel.CENTER
+            );
+
+            JLabel detailsLabel = new JLabel(
+                    "<html><div style='text-align: center; font-size: small; color: #555;'>" +
+                            "<p style='margin: 2px 0;'><b>Color:</b> " + item.get("colour") + "</p>" +
+                            "<p style='margin: 2px 0;'><b>Type:</b> " + item.get("itemType") + "</p>" +
+                            "<p style='margin: 2px 0;'><b>Size:</b> " + item.get("size") + "</p>" +
+                            "<p style='margin: 4px 0; font-style: italic; color: #777;'>" + item.get("description") + "</p>" +
+                            "</div></html>",
+                    JLabel.CENTER
+            );
+
+            nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            detailsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            panel.add(imageLabel);
+            panel.add(Box.createVerticalStrut(5));
+            panel.add(nameLabel);
+            panel.add(detailsLabel);
+
+            panel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (selectedItemPanel != null) {
+                        selectedItemPanel.setBorder(BorderFactory.createLineBorder(defaultPanelBorderColor, 1));
+                    }
+                    selectedItemPanel = panel;
+                    selectedItem = item;
+                    panel.setBorder(BorderFactory.createLineBorder(selectedPanelBorderColor, 2));
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    if (panel != selectedItemPanel) {
+                        panel.setBorder(BorderFactory.createLineBorder(hoverPanelBorderColor, 2));
+                    }
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    if (panel != selectedItemPanel) {
+                        panel.setBorder(BorderFactory.createLineBorder(defaultPanelBorderColor, 1));
+                    }
+                }
+            });
+
+            itemPanel.add(panel);
+        }
+
+        itemPanel.revalidate();
+        itemPanel.repaint();
+    }
+
+    private ImageIcon loadImage(String path) {
+        ImageIcon icon = null;
+        try {
+            icon = new ImageIcon(new ImageIcon(path).getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
+        } catch (Exception e) {
+            System.out.println("Image not found: " + path);
+        }
+
+        if (icon == null || icon.getIconWidth() == -1) {
+            icon = new ImageIcon(new ImageIcon("src/main/images/Logo.png")
+                    .getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
+        }
+
+        return icon;
+    }
+
+    private void performSearch() {
         String searchText = searchField.getText().trim();
         List<Map<String, Object>> results;
 
-        // Check if the search text is numeric (indicating an ID search)
         if (searchText.matches("\\d+")) {
             int id = Integer.parseInt(searchText);
-            results = ParseDatabase.searchItemsById(id); // New method to search by ID
+            results = ParseDatabase.searchItemsById(id);
         } else {
-            results = ParseDatabase.searchItems(searchText); // Existing method to search by name/description
+            results = ParseDatabase.searchItems(searchText);
         }
 
-        updateItemList(results);
+        loadClothingItems(results);
     }
 
-    public void performFilter() {
+    private void performFilter() {
         String selectedFilter = (String) filterDropdown.getSelectedItem();
-        List<Map<String, Object>> results = ParseDatabase.getClothingItems();
         if (selectedFilter != null && !selectedFilter.equals("All")) {
+            List<Map<String, Object>> results = ParseDatabase.getClothingItems();
             results.removeIf(item -> !selectedFilter.equalsIgnoreCase((String) item.get("itemType")));
-        }
-        updateItemList(results);
-    }
-
-    public void updateItemList(List<Map<String, Object>> items) {
-        itemListModel.clear();
-        for (Map<String, Object> item : items) {
-            itemListModel.addElement("<html><body style='padding: 10px;'>" + item.get("id") + " | " + item.get("name") + " | " + item.get("colour") + " | " + item.get("itemType") + " | " + item.get("size") + " | " + item.get("description") + "</body></html>");
+            loadClothingItems(results);
+        } else {
+            loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
 
-    public void addClothingItem() {
+    private void addClothingItem() {
         JTextField nameField = new JTextField();
         JTextField colorField = new JTextField();
         String[] itemTypes = {"Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"};
@@ -317,42 +397,23 @@ public class AdminCatalogueGUI {
             newItem.put("size", sizeField.getText());
             newItem.put("description", descriptionField.getText());
             ParseDatabase.addClothingItem(newItem);
-            loadClothingItems();
+            loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
 
-    public void editClothingItem() {
-        if (itemList.isSelectionEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Select an item to edit.", "Edit Item", JOptionPane.PLAIN_MESSAGE, clothingIcon);
+    private void editClothingItem() {
+        if (selectedItem == null) {
+            JOptionPane.showMessageDialog(frame, "Please select an item to edit first.", "Edit Item", JOptionPane.WARNING_MESSAGE, clothingIcon);
             return;
         }
 
-        String selectedValue = itemList.getSelectedValue().replaceAll("<[^>]*>", "");
-        int id = Integer.parseInt(selectedValue.split(" \\|")[0].trim());
-
-        List<Map<String, Object>> clothingItems = ParseDatabase.getClothingItems();
-
-        // Find the item by ID
-        Map<String, String> existingItem = null;
-        for (Map<String, Object> item : clothingItems) {
-            if ((int) item.get("id") == id) { // Assuming the "id" field is an Integer
-                existingItem = new HashMap<>();
-                existingItem.put("name", (String) item.get("name"));
-                existingItem.put("colour", (String) item.get("colour"));
-                existingItem.put("itemType", (String) item.get("itemType"));
-                existingItem.put("size", (String) item.get("size"));
-                existingItem.put("description", (String) item.get("description"));
-                break;
-            }
-        }
-
-        // Pre-fill the fields with the existing item details
-        JTextField nameField = new JTextField(existingItem.get("name"));
-        JTextField colorField = new JTextField(existingItem.get("colour"));
+        JTextField nameField = new JTextField((String) selectedItem.get("name"));
+        JTextField colorField = new JTextField((String) selectedItem.get("colour"));
         String[] itemTypes = {"Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"};
         JComboBox<String> typeField = new JComboBox<>(itemTypes);
-        JTextField sizeField = new JTextField(existingItem.get("size"));
-        JTextField descriptionField = new JTextField(existingItem.get("description"));
+        typeField.setSelectedItem(selectedItem.get("itemType"));
+        JTextField sizeField = new JTextField((String) selectedItem.get("size"));
+        JTextField descriptionField = new JTextField((String) selectedItem.get("description"));
 
         JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -365,42 +426,45 @@ public class AdminCatalogueGUI {
         int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (result == JOptionPane.OK_OPTION) {
             Map<String, String> updatedItem = new HashMap<>();
+            updatedItem.put("id", selectedItem.get("id").toString());
             updatedItem.put("name", nameField.getText());
             updatedItem.put("colour", colorField.getText());
             updatedItem.put("itemType", typeField.getSelectedItem().toString());
             updatedItem.put("size", sizeField.getText());
             updatedItem.put("description", descriptionField.getText());
-            ParseDatabase.editClothingItem(id, updatedItem);
-            loadClothingItems();
+            ParseDatabase.editClothingItem((int) selectedItem.get("id"), updatedItem);
+            loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
 
-    public void removeClothingItem() {
-        if (itemList.isSelectionEmpty()) {
-            JOptionPane.showMessageDialog(frame, "Select an item to remove.", "Remove Item", JOptionPane.PLAIN_MESSAGE, clothingIcon);
+    private void removeClothingItem() {
+        if (selectedItem == null) {
+            JOptionPane.showMessageDialog(frame, "Please select an item to remove first.", "Remove Item", JOptionPane.WARNING_MESSAGE, clothingIcon);
             return;
         }
 
-        String selectedValue = itemList.getSelectedValue().replaceAll("<[^>]*>", "");
-        int id = Integer.parseInt(selectedValue.split(" \\|")[0].trim());
+        int confirm = JOptionPane.showConfirmDialog(frame,
+                "Are you sure you want to remove this item?",
+                "Confirm Removal",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                clothingIcon);
 
-        int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to remove this item?", "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (confirm == JOptionPane.YES_OPTION) {
-            ParseDatabase.removeClothingItem(id);
-            loadClothingItems();
+            ParseDatabase.removeClothingItem((int) selectedItem.get("id"));
+            loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
 
-    public void exitApplication() {
+    private void exitApplication() {
         int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to log out?", "Log Out", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (confirm == JOptionPane.YES_OPTION) {
-            frame.dispose();  // Close the current AdminCatalogueGUI
-            new LogInPanel(); // Open the login screen again
+            frame.dispose();
+            new LogInPanel();
         }
     }
 
     public static void main(String[] args) {
-        // Example usage with a hardcoded username
         SwingUtilities.invokeLater(() -> new AdminCatalogueGUI("admin"));
         ParseDatabase.initializeDatabase();
         ParseDatabase.addGucciDress();

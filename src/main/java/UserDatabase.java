@@ -7,7 +7,7 @@ public class UserDatabase {
 
     //////////////////// "GREEN"  /////////////////
 
-//    private Map<String, List<Integer>> userFavourites = new HashMap<>();
+    private Map<String, List<Integer>> userFavourites = new HashMap<>();
 
     public void addFavourite(String user, int itemID) {
 //        // If the user doesn't exist in the map, create a new list for their favourites
@@ -20,6 +20,13 @@ public class UserDatabase {
 //        // Convert the list of integers to an array of primitives
 //        return favourites.stream().mapToInt(i -> i).toArray();
         return new int[]{};
+    }
+
+    public void removeFavourite(String user, int itemID) {
+//        // Remove the item from the user's favourites if the user exists
+//        if (userFavourites.containsKey(user)) {
+//            userFavourites.get(user).remove(Integer.valueOf(itemID));
+//        }
     }
 
     //////////////////// "REFACTOR"  /////////////////
@@ -40,7 +47,16 @@ public class UserDatabase {
 //        List<Integer> favourites = userFavourites.getOrDefault(user, new ArrayList<>());
 //        return convertListToArray(favourites);
 //    }
-//
+
+//    public void removeFavourite(String user, int itemID) {
+//        if (user == null) {
+//            throw new IllegalArgumentException("User cannot be null");
+//        }
+//        if (userFavourites.containsKey(user)) {
+//            userFavourites.get(user).remove(Integer.valueOf(itemID));
+//        }
+//    }
+////
 //    private int[] convertListToArray(List<Integer> list) {
 //        return list.stream().mapToInt(i -> i).toArray();
 //    }

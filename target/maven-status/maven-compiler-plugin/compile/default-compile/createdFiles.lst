@@ -19,6 +19,7 @@ UserCatalogueGUI.class
 AdminCatalogueGUI$3.class
 LogInPanel$1.class
 UserCatalogueGUI$7.class
+UserDatabase.class
 ParseDatabaseTest.class
 UserCatalogueGUI$2.class
 FrontEndRough.class
