@@ -23,6 +23,7 @@ public class AdminCatalogueGUI {
     private Color hoverPanelBorderColor = new Color(60, 179, 113);
     private Color selectedPanelBorderColor = new Color(0, 0, 255);
     private Map<String, Object> selectedItem = null;
+    private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
 
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
     static {
@@ -84,15 +85,14 @@ public class AdminCatalogueGUI {
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         searchPanel.setBackground(new Color(255, 235, 205));
 
-        searchField = new JTextField(25);
-        searchField.setFont(new Font("Arial", Font.PLAIN, 16));
-        searchField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        searchField = new JTextField(20);
+        searchField.setFont(modernFont);
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+        ));
 
-        searchButton = new JButton("Search");
-        searchButton.setFont(new Font("Arial", Font.BOLD, 14));
-        searchButton.setBackground(new Color(60, 179, 113));
-        searchButton.setForeground(Color.WHITE);
-        searchButton.setFocusPainted(false);
+        searchButton = new AdminCatalogueGUI.RoundedButton("Search", new Color(60, 179, 113), Color.WHITE);
 
         filterDropdown = new JComboBox<>(new String[]{"All", "Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"});
         filterDropdown.setFont(new Font("Arial", Font.BOLD, 14));
@@ -214,6 +214,11 @@ public class AdminCatalogueGUI {
             }
         });
 
+
+        searchField.setFont(modernFont);
+        searchButton.setFont(modernFont);
+        filterDropdown.setFont(modernFont);
+
         frame.setVisible(true);
     }
 
@@ -247,39 +252,32 @@ public class AdminCatalogueGUI {
 
     private void loadClothingItems(List<Map<String, Object>> items) {
         itemPanel.removeAll();
-        selectedItemPanel = null;
-        selectedItem = null;
 
         for (Map<String, Object> item : items) {
             JPanel panel = new JPanel();
             panel.setBackground(Color.WHITE);
-            panel.setBorder(BorderFactory.createLineBorder(defaultPanelBorderColor, 1));
+            panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1));
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-            panel.setPreferredSize(new Dimension(300, 400));
 
-            JPanel idPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            idPanel.setBackground(Color.WHITE);
+            // Load image using item ID
             int itemId = (int) item.get("id");
-            JLabel idLabel = new JLabel("ID: " + itemId);
-            idLabel.setFont(new Font("Arial", Font.BOLD, 12));
-            idLabel.setForeground(new Color(100, 100, 100));
-            idPanel.add(idLabel);
-            panel.add(idPanel);
-
             String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
             ImageIcon icon = loadImage(imagePath);
 
             JLabel imageLabel = new JLabel(icon);
             imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+            // Item name with ID integrated (small gray text after the name)
             String itemName = (String) item.get("name");
             JLabel nameLabel = new JLabel(
-                    "<html><div style='text-align: center; font-size: medium; font-weight: bold; color: #333;'>" +
-                            itemName +
+                    "<html><div style='text-align: center;'>" +
+                            "<span style='font-size: small; font-weight: bold; color: #666; margin-right: 6px;'>#" + itemId + "</span>" +
+                            "<span style='font-size: medium; font-weight: bold; color: #333;'>  " + itemName + "</span>" +
                             "</div></html>",
                     JLabel.CENTER
             );
 
+            // Item details with simplified formatting
             JLabel detailsLabel = new JLabel(
                     "<html><div style='text-align: center; font-size: small; color: #555;'>" +
                             "<p style='margin: 2px 0;'><b>Color:</b> " + item.get("colour") + "</p>" +
@@ -294,10 +292,11 @@ public class AdminCatalogueGUI {
             detailsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             panel.add(imageLabel);
-            panel.add(Box.createVerticalStrut(5));
+            panel.add(Box.createVerticalStrut(5)); // Add spacing between image and text
             panel.add(nameLabel);
             panel.add(detailsLabel);
 
+            // --- Hover/Selection Effects ---
             panel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -461,6 +460,56 @@ public class AdminCatalogueGUI {
         if (confirm == JOptionPane.YES_OPTION) {
             frame.dispose();
             new LogInPanel();
+        }
+    }
+
+    private static class RoundedButton extends JButton {
+        private final Color bgColor;
+        private final Color fgColor;
+        private Color currentColor;
+
+        public RoundedButton(String text, Color bgColor, Color fgColor) {
+            super(text);
+            this.bgColor = bgColor;
+            this.fgColor = fgColor;
+            this.currentColor = bgColor;
+
+            setFocusPainted(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setOpaque(false);
+            setFont(new Font("Arial", Font.BOLD, 14));
+            setForeground(fgColor);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    currentColor = bgColor.darker();
+                    repaint();
+                }
+
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    currentColor = bgColor;
+                    repaint();
+                }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2.setColor(currentColor);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+
+            FontMetrics fm = g2.getFontMetrics();
+            int x = (getWidth() - fm.stringWidth(getText())) / 2;
+            int y = (getHeight() + fm.getAscent()) / 2 - 2;
+            g2.setColor(fgColor);
+            g2.drawString(getText(), x, y);
+
+            g2.dispose();
         }
     }
 

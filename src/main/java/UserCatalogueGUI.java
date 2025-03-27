@@ -25,6 +25,7 @@ public class UserCatalogueGUI {
     private int slidingTextWidth = 0;
     private final int SLIDING_TEXT_MAX_WIDTH = 150; // Maximum width of the sliding text
     private Icon clothingIcon;
+    private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
 
     // Hardcoded mapping of item IDs to image paths
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
@@ -95,9 +96,12 @@ public class UserCatalogueGUI {
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         searchPanel.setBackground(new Color(255, 235, 205));
 
-        searchField = new JTextField(25);
-        searchField.setFont(new Font("Arial", Font.PLAIN, 16));
-        searchField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        searchField = new JTextField(20);
+        searchField.setFont(modernFont);
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+        ));
 
         searchButton = new RoundedButton("Search", new Color(60, 179, 113), Color.WHITE);
         filterDropdown = new JComboBox<>(new String[]{"All", "Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"});
@@ -264,6 +268,10 @@ public class UserCatalogueGUI {
                 slideInTimer.start();
             }
         });
+
+        searchField.setFont(modernFont);
+        searchButton.setFont(modernFont);
+        filterDropdown.setFont(modernFont);
 
         frame.setVisible(true);
     }

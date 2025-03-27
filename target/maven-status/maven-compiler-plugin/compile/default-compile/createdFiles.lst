@@ -12,6 +12,7 @@ ParseDatabase.class
 UserCatalogueGUI$6.class
 AdminCatalogueGUI.class
 BackendTesting.class
+ShowFavouriteItemTest.class
 ProductFullscreenViewer$1.class
 UserCatalogueGUI$4.class
 UserCatalogueGUI$RoundedButton$1.class
