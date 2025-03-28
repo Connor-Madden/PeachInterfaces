@@ -10,6 +10,7 @@ public class ShowFavouriteItemTest {
   @Before
   public void setUp() {
     db = new UserDatabase();
+    db.clearDatabase();
   }
 
   // make sure its instantiates correctly

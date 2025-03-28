@@ -51,6 +51,9 @@ public class UserDatabase {
     public void addFavourite(String user, int itemID) {
 //        // If the user doesn't exist in the map, create a new list for their favourites
 //        userFavourites.computeIfAbsent(user, k -> new ArrayList<>()).add(itemID);
+        if (user == null) {
+            throw new IllegalArgumentException("user cannot be null");
+        }
 
         try {
             // first fetch from the json
@@ -59,9 +62,8 @@ public class UserDatabase {
             // add if the item to the array
             if (!userFavourites.containsKey(user)) {
                 userFavourites.put(user, new ArrayList<>());
-            }else{
-                userFavourites.get(user).add(itemID);
             }
+            userFavourites.get(user).add(itemID);
 
             // write back to the json
             hashmapToJson(userFavourites);
@@ -78,6 +80,9 @@ public class UserDatabase {
 //        // Convert the list of integers to an array of primitives
 //        return favourites.stream().mapToInt(i -> i).toArray();
 
+        if (user == null) {
+            throw new IllegalArgumentException("user cannot be null");
+        }
         try {
             // fetch the hashmap from json file
             Map<String, List<Integer>> userFavourites = jsonToHashmap();
@@ -98,13 +103,16 @@ public class UserDatabase {
 //        if (userFavourites.containsKey(user)) {
 //            userFavourites.get(user).remove(Integer.valueOf(itemID));
 //        }
+        if (user == null) {
+            throw new IllegalArgumentException("user cannot be null");
+        }
         try {
             // fetch the favourites from the json
             Map<String, List<Integer>> userFavourites = jsonToHashmap();
 
             // remove the user if it exists
             if (userFavourites.containsKey(user)) {
-                userFavourites.get(user).remove(itemID);
+                userFavourites.get(user).remove(Integer.valueOf(itemID));
             }
 
             // write back to the json
@@ -113,6 +121,16 @@ public class UserDatabase {
         }catch (Exception error) {
             error.printStackTrace();
             System.out.println("Error while removing favourite item (removeFavourite)");
+        }
+    }
+
+    // this is just used for testing
+    public void clearDatabase() {
+        try {
+            hashmapToJson(new HashMap<>());
+        } catch (Exception error) {
+            error.printStackTrace();
+            System.out.println("Error while clearing database (clearDatabase)");
         }
     }
 
