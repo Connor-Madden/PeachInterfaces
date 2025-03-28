@@ -1,6 +1,9 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -379,33 +382,200 @@ public class AdminCatalogueGUI {
         JTextField sizeField = new JTextField();
         JTextField descriptionField = new JTextField();
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panel.add(new JLabel("Name:")); panel.add(nameField);
-        panel.add(new JLabel("Color:")); panel.add(colorField);
-        panel.add(new JLabel("Type:")); panel.add(typeField);
-        panel.add(new JLabel("Size:")); panel.add(sizeField);
-        panel.add(new JLabel("Description:")); panel.add(descriptionField);
+        // Image selection components with better formatting
+        JPanel imagePreviewPanel = new JPanel(new BorderLayout());
+        imagePreviewPanel.setBorder(BorderFactory.createTitledBorder("Item Image"));
+        imagePreviewPanel.setPreferredSize(new Dimension(250, 250));
 
-        int result = JOptionPane.showConfirmDialog(frame, panel, "Add Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
+        JLabel imagePreviewLabel = new JLabel("No image selected", JLabel.CENTER);
+        imagePreviewLabel.setVerticalTextPosition(JLabel.BOTTOM);
+        imagePreviewLabel.setHorizontalTextPosition(JLabel.CENTER);
+        imagePreviewLabel.setForeground(Color.GRAY);
+        imagePreviewLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+
+        // Container panel to maintain aspect ratio
+        JPanel imageContainer = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (imagePreviewLabel.getIcon() == null) {
+                    g.setColor(new Color(240, 240, 240));
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                    g.setColor(Color.LIGHT_GRAY);
+                    g.drawRect(10, 10, getWidth() - 20, getHeight() - 20);
+                }
+            }
+        };
+        imageContainer.setBackground(Color.WHITE);
+        imageContainer.setPreferredSize(new Dimension(200, 200));
+        imageContainer.add(imagePreviewLabel);
+
+        JButton selectImageButton = new JButton("Select Image");
+        selectImageButton.setPreferredSize(new Dimension(120, 25));
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        buttonPanel.add(selectImageButton);
+
+        imagePreviewPanel.add(imageContainer, BorderLayout.CENTER);
+        imagePreviewPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        selectImageButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Select Item Image");
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
+                public boolean accept(File f) {
+                    String name = f.getName().toLowerCase();
+                    return f.isDirectory() || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
+                }
+
+                public String getDescription() {
+                    return "Image Files (*.png, *.jpg, *.jpeg)";
+                }
+            });
+
+            int returnValue = fileChooser.showOpenDialog(frame);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                try {
+                    ImageIcon icon = new ImageIcon(selectedFile.getAbsolutePath());
+                    Image image = icon.getImage();
+
+                    // Calculate scaled dimensions while maintaining aspect ratio
+                    int containerWidth = imageContainer.getWidth() - 20;
+                    int containerHeight = imageContainer.getHeight() - 20;
+
+                    double widthRatio = (double) containerWidth / image.getWidth(null);
+                    double heightRatio = (double) containerHeight / image.getHeight(null);
+                    double ratio = Math.min(widthRatio, heightRatio);
+
+                    int scaledWidth = (int) (image.getWidth(null) * ratio);
+                    int scaledHeight = (int) (image.getHeight(null) * ratio);
+
+                    Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+                    imagePreviewLabel.setIcon(new ImageIcon(scaledImage));
+                    imagePreviewLabel.setText("");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error loading image: " + ex.getMessage(),
+                            "Image Error", JOptionPane.ERROR_MESSAGE);
+                    imagePreviewLabel.setIcon(null);
+                    imagePreviewLabel.setText("Invalid image");
+                }
+            }
+        });
+
+
+
+        // Main panel layout
+        JPanel panel = new JPanel(new BorderLayout(15, 15));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // Form panel with better spacing
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Item Details"));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(new JLabel("Name:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(nameField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(new JLabel("Color:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(colorField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2;
+        formPanel.add(new JLabel("Type:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(typeField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 3;
+        formPanel.add(new JLabel("Size:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(sizeField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 4;
+        formPanel.add(new JLabel("Description:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(descriptionField, gbc);
+
+        panel.add(formPanel, BorderLayout.CENTER);
+        panel.add(imagePreviewPanel, BorderLayout.EAST);
+
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Add Item",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
+
         if (result == JOptionPane.OK_OPTION) {
+            // Create a new item map with all the entered data
             Map<String, String> newItem = new HashMap<>();
             newItem.put("name", nameField.getText());
             newItem.put("colour", colorField.getText());
-            newItem.put("itemType", typeField.getSelectedItem().toString());
+            newItem.put("itemType", (String) typeField.getSelectedItem());
             newItem.put("size", sizeField.getText());
             newItem.put("description", descriptionField.getText());
+
+            // Handle the image
+            if (imagePreviewLabel.getIcon() != null) {
+                try {
+                    // Generate a unique ID for the new item
+                    int newId = ITEM_IMAGES.keySet().stream().max(Integer::compare).orElse(0) + 1;
+
+                    // Create the destination path
+                    String destPath = "src/main/images/item_" + newId + ".png";
+
+                    // Get the selected image
+                    ImageIcon icon = (ImageIcon) imagePreviewLabel.getIcon();
+                    Image image = icon.getImage();
+
+                    // Save the image to the destination path
+                    BufferedImage bufferedImage = new BufferedImage(
+                            image.getWidth(null),
+                            image.getHeight(null),
+                            BufferedImage.TYPE_INT_ARGB
+                    );
+                    Graphics2D g2 = bufferedImage.createGraphics();
+                    g2.drawImage(image, 0, 0, null);
+                    g2.dispose();
+
+                    ImageIO.write(bufferedImage, "png", new File(destPath));
+
+                    // Update the ITEM_IMAGES map
+                    ITEM_IMAGES.put(newId, destPath);
+                    newItem.put("id", String.valueOf(newId));
+                    newItem.put("imagePath", destPath);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error saving image: " + ex.getMessage(),
+                            "Image Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                // Use default image if none selected
+                int newId = ITEM_IMAGES.keySet().stream().max(Integer::compare).orElse(0) + 1;
+                newItem.put("id", String.valueOf(newId));
+                newItem.put("imagePath", "src/main/images/Logo.png");
+            }
+
+            // Add the item to the database
             ParseDatabase.addClothingItem(newItem);
+
+            // Reload the items to show the new one
             loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
 
     private void editClothingItem() {
         if (selectedItem == null) {
-            JOptionPane.showMessageDialog(frame, "Please select an item to edit first.", "Edit Item", JOptionPane.WARNING_MESSAGE, clothingIcon);
+            JOptionPane.showMessageDialog(frame, "Please select an item to edit first.",
+                    "Edit Item", JOptionPane.WARNING_MESSAGE, clothingIcon);
             return;
         }
 
+        // Create input fields with current values
         JTextField nameField = new JTextField((String) selectedItem.get("name"));
         JTextField colorField = new JTextField((String) selectedItem.get("colour"));
         String[] itemTypes = {"Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"};
@@ -414,16 +584,151 @@ public class AdminCatalogueGUI {
         JTextField sizeField = new JTextField((String) selectedItem.get("size"));
         JTextField descriptionField = new JTextField((String) selectedItem.get("description"));
 
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panel.add(new JLabel("Name:")); panel.add(nameField);
-        panel.add(new JLabel("Color:")); panel.add(colorField);
-        panel.add(new JLabel("Type:")); panel.add(typeField);
-        panel.add(new JLabel("Size:")); panel.add(sizeField);
-        panel.add(new JLabel("Description:")); panel.add(descriptionField);
+        // Image selection components with better formatting
+        JPanel imagePreviewPanel = new JPanel(new BorderLayout());
+        imagePreviewPanel.setBorder(BorderFactory.createTitledBorder("Item Image"));
+        imagePreviewPanel.setPreferredSize(new Dimension(250, 250));
 
-        int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
+        // Load current image or show default
+        JLabel imagePreviewLabel = new JLabel("", JLabel.CENTER);
+        imagePreviewLabel.setVerticalTextPosition(JLabel.BOTTOM);
+        imagePreviewLabel.setHorizontalTextPosition(JLabel.CENTER);
+        imagePreviewLabel.setForeground(Color.GRAY);
+        imagePreviewLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+
+        try {
+            int itemId = (int) selectedItem.get("id");
+            String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
+            ImageIcon icon = new ImageIcon(imagePath);
+            if (icon.getImage() != null) {
+                Image image = icon.getImage();
+                Image scaledImage = image.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+                imagePreviewLabel.setIcon(new ImageIcon(scaledImage));
+            } else {
+                imagePreviewLabel.setText("No image selected");
+            }
+        } catch (Exception e) {
+            imagePreviewLabel.setText("No image selected");
+        }
+
+        // Container panel to maintain aspect ratio
+        JPanel imageContainer = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (imagePreviewLabel.getIcon() == null) {
+                    g.setColor(new Color(240, 240, 240));
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                    g.setColor(Color.LIGHT_GRAY);
+                    g.drawRect(10, 10, getWidth() - 20, getHeight() - 20);
+                }
+            }
+        };
+        imageContainer.setBackground(Color.WHITE);
+        imageContainer.setPreferredSize(new Dimension(200, 200));
+        imageContainer.add(imagePreviewLabel);
+
+        JButton selectImageButton = new JButton("Change Image");
+        selectImageButton.setPreferredSize(new Dimension(120, 25));
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        buttonPanel.add(selectImageButton);
+
+        imagePreviewPanel.add(imageContainer, BorderLayout.CENTER);
+        imagePreviewPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        selectImageButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Select Item Image");
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
+                public boolean accept(File f) {
+                    String name = f.getName().toLowerCase();
+                    return f.isDirectory() || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
+                }
+
+                public String getDescription() {
+                    return "Image Files (*.png, *.jpg, *.jpeg)";
+                }
+            });
+
+            int returnValue = fileChooser.showOpenDialog(frame);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                try {
+                    ImageIcon icon = new ImageIcon(selectedFile.getAbsolutePath());
+                    Image image = icon.getImage();
+
+                    // Calculate scaled dimensions while maintaining aspect ratio
+                    int containerWidth = imageContainer.getWidth() - 20;
+                    int containerHeight = imageContainer.getHeight() - 20;
+
+                    double widthRatio = (double) containerWidth / image.getWidth(null);
+                    double heightRatio = (double) containerHeight / image.getHeight(null);
+                    double ratio = Math.min(widthRatio, heightRatio);
+
+                    int scaledWidth = (int) (image.getWidth(null) * ratio);
+                    int scaledHeight = (int) (image.getHeight(null) * ratio);
+
+                    Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+                    imagePreviewLabel.setIcon(new ImageIcon(scaledImage));
+                    imagePreviewLabel.setText("");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error loading image: " + ex.getMessage(),
+                            "Image Error", JOptionPane.ERROR_MESSAGE);
+                    imagePreviewLabel.setIcon(null);
+                    imagePreviewLabel.setText("Invalid image");
+                }
+            }
+        });
+
+        // Main panel layout
+        JPanel panel = new JPanel(new BorderLayout(15, 15));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // Form panel with better spacing
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBorder(BorderFactory.createTitledBorder("Item Details"));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+
+        gbc.gridx = 0; gbc.gridy = 0;
+        formPanel.add(new JLabel("Name:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(nameField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 1;
+        formPanel.add(new JLabel("Color:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(colorField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 2;
+        formPanel.add(new JLabel("Type:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(typeField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 3;
+        formPanel.add(new JLabel("Size:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(sizeField, gbc);
+
+        gbc.gridx = 0; gbc.gridy = 4;
+        formPanel.add(new JLabel("Description:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(descriptionField, gbc);
+
+        panel.add(formPanel, BorderLayout.CENTER);
+        panel.add(imagePreviewPanel, BorderLayout.EAST);
+
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Edit Item",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
+
         if (result == JOptionPane.OK_OPTION) {
+            // Create updated item with all the entered data
             Map<String, String> updatedItem = new HashMap<>();
             updatedItem.put("id", selectedItem.get("id").toString());
             updatedItem.put("name", nameField.getText());
@@ -431,7 +736,42 @@ public class AdminCatalogueGUI {
             updatedItem.put("itemType", typeField.getSelectedItem().toString());
             updatedItem.put("size", sizeField.getText());
             updatedItem.put("description", descriptionField.getText());
+
+            // Handle the image update if changed
+            if (imagePreviewLabel.getIcon() != null) {
+                try {
+                    int itemId = (int) selectedItem.get("id");
+                    String destPath = "src/main/images/item_" + itemId + ".png";
+
+                    // Get the selected image
+                    ImageIcon icon = (ImageIcon) imagePreviewLabel.getIcon();
+                    Image image = icon.getImage();
+
+                    // Save the image to the destination path
+                    BufferedImage bufferedImage = new BufferedImage(
+                            image.getWidth(null),
+                            image.getHeight(null),
+                            BufferedImage.TYPE_INT_ARGB
+                    );
+                    Graphics2D g2 = bufferedImage.createGraphics();
+                    g2.drawImage(image, 0, 0, null);
+                    g2.dispose();
+
+                    ImageIO.write(bufferedImage, "png", new File(destPath));
+
+                    // Update the ITEM_IMAGES map
+                    ITEM_IMAGES.put(itemId, destPath);
+                    updatedItem.put("imagePath", destPath);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Error saving image: " + ex.getMessage(),
+                            "Image Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+
+            // Update the item in the database
             ParseDatabase.editClothingItem((int) selectedItem.get("id"), updatedItem);
+
+            // Reload the items to show the updated one
             loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
