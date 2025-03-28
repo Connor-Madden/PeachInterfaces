@@ -245,6 +245,8 @@ public class AdminCatalogueGUI {
         });
     }
 
+
+
     private Color darkenColor(Color color, float factor) {
         return new Color(
                 Math.max((int)(color.getRed() * factor), 0),
