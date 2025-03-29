@@ -1,14 +1,17 @@
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.awt.geom.GeneralPath;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 
 
 // User Catalog Class
@@ -26,6 +29,10 @@ public class UserCatalogueGUI {
     private final int SLIDING_TEXT_MAX_WIDTH = 150; // Maximum width of the sliding text
     private Icon clothingIcon;
     private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
+    private String username;
+    private Set<Integer> favorites = new HashSet<>();
+    private RoundedButton favoritesButton;
+    private static final String FAVORITES_DIR = "user_favorites/";
 
     // Hardcoded mapping of item IDs to image paths
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
@@ -42,6 +49,7 @@ public class UserCatalogueGUI {
     }
 
     public UserCatalogueGUI(String username) {
+        this.username = username;
         frame = new JFrame("User - Fashion and Clothing Catalogue");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(900, 700);
@@ -50,6 +58,11 @@ public class UserCatalogueGUI {
 
         // Set the frame to full screen
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Open in full screen mode
+
+        // Load favorites if not guest
+        if (!"Guest".equals(username)) {
+            loadFavorites();
+        }
 
         // Load and resize clothing icon
         ImageIcon originalIcon = new ImageIcon("src/main/java/ClothingIcon.png");
@@ -91,6 +104,22 @@ public class UserCatalogueGUI {
         gbcLogo.anchor = GridBagConstraints.WEST; // Anchor to the left
         gbcLogo.insets = new Insets(0, 10, 0, 10); // Add some padding
         topPanel.add(logoPanel, gbcLogo);
+
+        // --------------- FAVORITES BUTTON (Right Side) -------------------
+        if (!"Guest".equals(username)) {
+            favoritesButton = new RoundedButton("Favourites", new Color(255, 105, 180), Color.WHITE);
+            favoritesButton.setFont(modernFont);
+            favoritesButton.addActionListener(e -> showFavorites());
+
+            GridBagConstraints gbcFavorites = new GridBagConstraints();
+            gbcFavorites.gridx = 2;
+            gbcFavorites.gridy = 0;
+            gbcFavorites.anchor = GridBagConstraints.EAST;
+            gbcFavorites.insets = new Insets(0, 10, 0, 20);
+            topPanel.add(favoritesButton, gbcFavorites);
+        }
+
+        frame.add(topPanel, BorderLayout.NORTH);
 
         // --------------- SEARCH & FILTER PANEL (Center) -------------------
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
@@ -285,24 +314,47 @@ public class UserCatalogueGUI {
             panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1));
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-            // Load image using item ID
-            int itemId = (int) item.get("id"); // Assuming the ID is stored as an integer
-            String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png"); // Use hardcoded image or default logo
+            int itemId = (int) item.get("id");
+            String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
             ImageIcon icon = loadImage(imagePath);
 
-            JLabel imageLabel = new JLabel(icon);
-            imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            // Create a panel for the image (centered)
+            JPanel imagePanel = new JPanel(new BorderLayout());
+            imagePanel.setBackground(Color.WHITE);
+            imagePanel.setPreferredSize(new Dimension(150, 200)); // Fixed size for consistency
 
-            // Item name with simplified formatting
+            JLabel imageLabel = new JLabel(icon);
+            imageLabel.setHorizontalAlignment(JLabel.CENTER); // Center the image
+            imageLabel.setVerticalAlignment(JLabel.CENTER);
+            imagePanel.add(imageLabel, BorderLayout.CENTER);
+
+            // Only add the favorite button if the user is NOT "Guest"
+            if (!"Guest".equals(username)) {
+                JButton favoriteButton = new JButton();
+                favoriteButton.setOpaque(false);
+                favoriteButton.setContentAreaFilled(false);
+                favoriteButton.setBorderPainted(false);
+                favoriteButton.setFocusPainted(false);
+                favoriteButton.setIcon(new ImageIcon(createHeartIcon(favorites.contains(itemId))));
+                favoriteButton.addActionListener(e -> toggleFavorite(itemId, favoriteButton));
+
+                // Position the heart in the top-right
+                JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                buttonPanel.setOpaque(false);
+                buttonPanel.add(favoriteButton);
+                imagePanel.add(buttonPanel, BorderLayout.NORTH);
+            }
+
+            // Product name (centered) - matches admin layout but without ID
             String itemName = (String) item.get("name");
             JLabel nameLabel = new JLabel(
-                    "<html><div style='text-align: center; font-size: medium; font-weight: bold; color: #333;'>" +
-                            itemName +
+                    "<html><div style='text-align: center;'>" +
+                            "<span style='font-size: medium; font-weight: bold; color: #333;'>" + itemName + "</span>" +
                             "</div></html>",
                     JLabel.CENTER
             );
 
-            // Item details with simplified formatting
+            // Product details (centered) - same as admin layout
             JLabel detailsLabel = new JLabel(
                     "<html><div style='text-align: center; font-size: small; color: #555;'>" +
                             "<p style='margin: 2px 0;'><b>Color:</b> " + item.get("colour") + "</p>" +
@@ -316,27 +368,26 @@ public class UserCatalogueGUI {
             nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             detailsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            panel.add(imageLabel);
-            panel.add(Box.createVerticalStrut(5)); // Add spacing between image and text
+            // Add components to the panel
+            panel.add(imagePanel);
+            panel.add(Box.createVerticalStrut(5)); // Spacing
             panel.add(nameLabel);
             panel.add(detailsLabel);
 
-            // Add hover effect to the panel
+            // Mouse hover effects
             panel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    panel.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 2)); // Green border on hover
+                    panel.setBorder(BorderFactory.createLineBorder(new Color(60, 179, 113), 2));
                 }
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1)); // Restore original border
+                    panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1));
                 }
-            });
 
-            // Add click listener to open fullscreen
-            panel.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                @Override
+                public void mouseClicked(MouseEvent e) {
                     ProductFullscreenViewer.openProductFullscreen(item, imagePath);
                 }
             });
@@ -346,6 +397,103 @@ public class UserCatalogueGUI {
 
         itemPanel.revalidate();
         itemPanel.repaint();
+    }
+
+    private Image createHeartIcon(boolean filled) {
+        if ("Guest".equals(username)) {
+            // Return a transparent image for guests
+            return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        }
+
+        int width = 26;
+        int height = 20;
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = image.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Create a more natural heart shape
+        if (filled) {
+            g2.setColor(new Color(255, 105, 180)); // Hot pink
+        } else {
+            g2.setColor(new Color(200, 200, 200)); // Light gray
+        }
+
+        // Draw a properly proportioned heart
+        GeneralPath heart = new GeneralPath();
+        heart.moveTo(width/2, height/4);
+        heart.curveTo(width/2 + width/4, -height/4, width, height/3, width/2, height);
+        heart.curveTo(0, height/3, width/2 - width/4, -height/4, width/2, height/4);
+
+        g2.fill(heart);
+
+        // Add outline for better visibility
+        g2.setStroke(new BasicStroke(1.2f));
+        g2.setColor(filled ? new Color(200, 0, 100) : new Color(150, 150, 150));
+        g2.draw(heart);
+
+        g2.dispose();
+        return image;
+    }
+
+    private void toggleFavorite(int itemId, JButton favoriteButton) {
+        if ("Guest".equals(username)) return;
+        if (favorites.contains(itemId)) {
+            favorites.remove(itemId);
+            favoriteButton.setIcon(new ImageIcon(createHeartIcon(false)));
+        } else {
+            favorites.add(itemId);
+            favoriteButton.setIcon(new ImageIcon(createHeartIcon(true)));
+        }
+        saveFavorites();
+    }
+
+    private void showFavorites() {
+        List<Map<String, Object>> allItems = ParseDatabase.getClothingItems();
+        List<Map<String, Object>> favoriteItems = new ArrayList<>();
+
+        for (Map<String, Object> item : allItems) {
+            int itemId = (int) item.get("id");
+            if (favorites.contains(itemId)) {
+                favoriteItems.add(item);
+            }
+        }
+
+        if (favoriteItems.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "You haven't added any items to favorites yet!", "Favorites", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            loadClothingItems(favoriteItems);
+            JOptionPane.showMessageDialog(frame, "Showing your favorite items", "Favorites", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void loadFavorites() {
+        File file = new File(FAVORITES_DIR + username + ".dat");
+        if (!file.exists()) {
+            return;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            favorites = (Set<Integer>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading favorites: " + e.getMessage());
+            favorites = new HashSet<>();
+        }
+    }
+
+    private void saveFavorites() {
+        // Create directory if it doesn't exist
+        File dir = new File(FAVORITES_DIR);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        File file = new File(FAVORITES_DIR + username + ".dat");
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+            oos.writeObject(favorites);
+        } catch (IOException e) {
+            System.out.println("Error saving favorites: " + e.getMessage());
+        }
     }
 
 
@@ -425,19 +573,42 @@ public class UserCatalogueGUI {
 
 
     private ImageIcon loadImage(String path) {
-        ImageIcon icon = null;
         try {
-            icon = new ImageIcon(new ImageIcon(path).getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
+            // Load the original image
+            Image originalImage = new ImageIcon(path).getImage();
+
+            // Calculate scaled dimensions maintaining aspect ratio
+            int targetWidth = 150;
+            int targetHeight = 200;
+
+            // Get original dimensions
+            int originalWidth = originalImage.getWidth(null);
+            int originalHeight = originalImage.getHeight(null);
+
+            // Calculate scaling factors
+            double widthRatio = (double) targetWidth / originalWidth;
+            double heightRatio = (double) targetHeight / originalHeight;
+            double ratio = Math.min(widthRatio, heightRatio);
+
+            // Calculate new dimensions
+            int scaledWidth = (int) (originalWidth * ratio);
+            int scaledHeight = (int) (originalHeight * ratio);
+
+            // Create high-quality scaled instance
+            Image scaledImage = originalImage.getScaledInstance(
+                    scaledWidth,
+                    scaledHeight,
+                    Image.SCALE_SMOOTH);
+
+            return new ImageIcon(scaledImage);
         } catch (Exception e) {
             System.out.println("Image not found: " + path);
+            // Return default image with proper scaling
+            Image defaultImage = new ImageIcon("src/main/images/Logo.png")
+                    .getImage()
+                    .getScaledInstance(150, 200, Image.SCALE_SMOOTH);
+            return new ImageIcon(defaultImage);
         }
-
-        if (icon == null || icon.getIconWidth() == -1) {
-            icon = new ImageIcon(new ImageIcon("src/main/images/Logo.png")
-                    .getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
-        }
-
-        return icon;
     }
 
     private void updateItemWidth() {

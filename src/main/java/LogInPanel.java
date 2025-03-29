@@ -96,9 +96,9 @@ public class LogInPanel {
             }
 
             if ("admin".equals(username) && "adminpass".equals(password)) {
-                showLoginDialog("You are logged in as admin", username, true);
+                showLoginDialog("You are logged in as an admin", username, true);
             } else if (userCredentials.containsKey(username) && userCredentials.get(username).equals(password)) {
-                showLoginDialog("You are logged in as user", username, false);
+                showLoginDialog("You are logged in as " + username, username, false);
             } else {
                 JOptionPane.showMessageDialog(loginFrame, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
@@ -120,7 +120,7 @@ public class LogInPanel {
         JButton guestButton = createStyledButton("Continue as Guest", new Color(100, 100, 100));
         guestButton.addActionListener(e -> {
             loginFrame.dispose();
-            new UserCatalogueGUI("Guest");
+            showGuestLoginDialog(); // Show the guest-specific dialog
         });
 
         // Exit button
@@ -258,7 +258,7 @@ public class LogInPanel {
         forgotPasswordDialog.add(usernameField, gbc);
 
         JButton retrieveButton = new JButton("Retrieve Password");
-        retrieveButton.setBackground(new Color(70, 130, 180));
+        retrieveButton.setBackground(new Color(218, 165, 32));
         retrieveButton.setForeground(Color.WHITE);
         retrieveButton.addActionListener(e -> {
             String username = usernameField.getText();
@@ -336,7 +336,7 @@ public class LogInPanel {
         createAccountDialog.add(confirmPasswordField, gbc);
 
         JButton createButton = new JButton("Create Account");
-        createButton.setBackground(new Color(60, 179, 113));
+        createButton.setBackground(new Color(70, 130, 180));
         createButton.setForeground(Color.WHITE);
         createButton.addActionListener(e -> {
             String username = newUsernameField.getText();
@@ -442,7 +442,45 @@ public class LogInPanel {
         dialog.setVisible(true);
     }
 
+    private void showGuestLoginDialog() {
+        JDialog dialog = new JDialog(loginFrame, "Guest Access", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(350, 200);
+        dialog.setLocationRelativeTo(loginFrame);
 
+        JLabel messageLabel = new JLabel("<html><center>You are browsing as a guest.<br>Favourite features are disabled for guest users.</center></html>",
+                SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        dialog.add(messageLabel, BorderLayout.CENTER);
+
+        JButton continueButton = new JButton("Continue as Guest");
+        continueButton.setBackground(new Color(100, 100, 100));
+        continueButton.setForeground(Color.WHITE);
+        continueButton.setFont(new Font("Arial", Font.BOLD, 12));
+        continueButton.setFocusPainted(false);
+        continueButton.setBorderPainted(false);
+
+        continueButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                continueButton.setBackground(new Color(70, 70, 70));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                continueButton.setBackground(new Color(100, 100, 100));
+            }
+        });
+
+        continueButton.addActionListener(e -> {
+            dialog.dispose();
+            loginFrame.dispose();
+            new UserCatalogueGUI("Guest");
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(continueButton);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(LogInPanel::new);
