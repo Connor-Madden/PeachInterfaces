@@ -388,7 +388,12 @@ public class UserCatalogueGUI {
 
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    ProductFullscreenViewer.openProductFullscreen(item, imagePath);
+                    // Pass the description file path to the full-screen viewer
+                    String descriptionFilePath = "src/main/descriptions/" + itemName + "Des.txt";
+
+                    System.out.println("Description file path: " + descriptionFilePath);
+
+                    ProductFullscreenViewer.openProductFullscreen(item, imagePath, descriptionFilePath);
                 }
             });
 
