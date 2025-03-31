@@ -4,6 +4,9 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -384,6 +387,12 @@ public class AdminCatalogueGUI {
         JTextField sizeField = new JTextField();
         JTextField descriptionField = new JTextField();
 
+        // Add a text area for long description
+        JTextArea longDescriptionArea = new JTextArea(5, 30);
+        longDescriptionArea.setLineWrap(true);
+        longDescriptionArea.setWrapStyleWord(true);
+        JScrollPane longDescriptionScroll = new JScrollPane(longDescriptionArea);
+
         // Image selection components with better formatting
         JPanel imagePreviewPanel = new JPanel(new BorderLayout());
         imagePreviewPanel.setBorder(BorderFactory.createTitledBorder("Item Image"));
@@ -507,6 +516,12 @@ public class AdminCatalogueGUI {
         gbc.gridx = 1;
         formPanel.add(descriptionField, gbc);
 
+        // Add to form panel
+        gbc.gridx = 0; gbc.gridy = 5;
+        formPanel.add(new JLabel("Long Description:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(longDescriptionScroll, gbc);
+
         panel.add(formPanel, BorderLayout.CENTER);
         panel.add(imagePreviewPanel, BorderLayout.EAST);
 
@@ -523,49 +538,43 @@ public class AdminCatalogueGUI {
             newItem.put("description", descriptionField.getText());
 
             // Handle the image
+            int newId = ITEM_IMAGES.keySet().stream().max(Integer::compare).orElse(0) + 1;
             if (imagePreviewLabel.getIcon() != null) {
                 try {
-                    // Generate a unique ID for the new item
-                    int newId = ITEM_IMAGES.keySet().stream().max(Integer::compare).orElse(0) + 1;
-
-                    // Create the destination path
                     String destPath = "src/main/images/item_" + newId + ".png";
-
-                    // Get the selected image
                     ImageIcon icon = (ImageIcon) imagePreviewLabel.getIcon();
-                    Image image = icon.getImage();
-
-                    // Save the image to the destination path
                     BufferedImage bufferedImage = new BufferedImage(
-                            image.getWidth(null),
-                            image.getHeight(null),
-                            BufferedImage.TYPE_INT_ARGB
-                    );
+                            icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
                     Graphics2D g2 = bufferedImage.createGraphics();
-                    g2.drawImage(image, 0, 0, null);
+                    icon.paintIcon(null, g2, 0, 0);
                     g2.dispose();
-
                     ImageIO.write(bufferedImage, "png", new File(destPath));
-
-                    // Update the ITEM_IMAGES map
                     ITEM_IMAGES.put(newId, destPath);
-                    newItem.put("id", String.valueOf(newId));
                     newItem.put("imagePath", destPath);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, "Error saving image: " + ex.getMessage(),
                             "Image Error", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                // Use default image if none selected
-                int newId = ITEM_IMAGES.keySet().stream().max(Integer::compare).orElse(0) + 1;
-                newItem.put("id", String.valueOf(newId));
                 newItem.put("imagePath", "src/main/images/Logo.png");
             }
 
-            // Add the item to the database
-            ParseDatabase.addClothingItem(newItem);
+            // Save long description to file
+            try {
+                String descriptionFileName = "src/main/descriptions/item_" + newId + "_desc.txt";
+                Files.createDirectories(Paths.get("src/main/descriptions"));
+                Files.write(Paths.get(descriptionFileName),
+                        longDescriptionArea.getText().getBytes());
+                newItem.put("descriptionFile", descriptionFileName);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(frame, "Error saving description file: " + ex.getMessage(),
+                        "File Error", JOptionPane.ERROR_MESSAGE);
+            }
 
-            // Reload the items to show the new one
+            newItem.put("id", String.valueOf(newId));
+
+            // SINGLE database call to add the item
+            ParseDatabase.addClothingItem(newItem);
             loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
@@ -586,6 +595,24 @@ public class AdminCatalogueGUI {
         JTextField sizeField = new JTextField((String) selectedItem.get("size"));
         JTextField descriptionField = new JTextField((String) selectedItem.get("description"));
 
+        // Long description field
+        JTextArea longDescriptionArea = new JTextArea(5, 30);
+        longDescriptionArea.setLineWrap(true);
+        longDescriptionArea.setWrapStyleWord(true);
+        JScrollPane longDescriptionScroll = new JScrollPane(longDescriptionArea);
+
+        // Load existing long description from file
+        int itemId = (int) selectedItem.get("id");
+        String descFilePath = "src/main/descriptions/item_" + itemId + "_desc.txt";
+        try {
+            if (Files.exists(Paths.get(descFilePath))) {
+                String content = new String(Files.readAllBytes(Paths.get(descFilePath)));
+                longDescriptionArea.setText(content);
+            }
+        } catch (IOException ex) {
+            System.out.println("Error loading description file: " + ex.getMessage());
+        }
+
         // Image selection components with better formatting
         JPanel imagePreviewPanel = new JPanel(new BorderLayout());
         imagePreviewPanel.setBorder(BorderFactory.createTitledBorder("Item Image"));
@@ -599,7 +626,6 @@ public class AdminCatalogueGUI {
         imagePreviewLabel.setFont(new Font("Arial", Font.ITALIC, 12));
 
         try {
-            int itemId = (int) selectedItem.get("id");
             String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
             ImageIcon icon = new ImageIcon(imagePath);
             if (icon.getImage() != null) {
@@ -723,6 +749,12 @@ public class AdminCatalogueGUI {
         gbc.gridx = 1;
         formPanel.add(descriptionField, gbc);
 
+        // Add the new long description field
+        gbc.gridx = 0; gbc.gridy = 5;
+        formPanel.add(new JLabel("Long Description:"), gbc);
+        gbc.gridx = 1;
+        formPanel.add(longDescriptionScroll, gbc);
+
         panel.add(formPanel, BorderLayout.CENTER);
         panel.add(imagePreviewPanel, BorderLayout.EAST);
 
@@ -730,7 +762,7 @@ public class AdminCatalogueGUI {
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
 
         if (result == JOptionPane.OK_OPTION) {
-            // Create updated item with all the entered data
+            // Update the item with new values
             Map<String, String> updatedItem = new HashMap<>();
             updatedItem.put("id", selectedItem.get("id").toString());
             updatedItem.put("name", nameField.getText());
@@ -739,29 +771,27 @@ public class AdminCatalogueGUI {
             updatedItem.put("size", sizeField.getText());
             updatedItem.put("description", descriptionField.getText());
 
-            // Handle the image update if changed
+            // Save the long description to file
+            try {
+                Files.createDirectories(Paths.get("src/main/descriptions"));
+                Files.write(Paths.get(descFilePath), longDescriptionArea.getText().getBytes());
+                updatedItem.put("descriptionFile", descFilePath);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(frame, "Error saving description file: " + ex.getMessage(),
+                        "File Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            // Handle image update if changed
             if (imagePreviewLabel.getIcon() != null) {
                 try {
-                    int itemId = (int) selectedItem.get("id");
                     String destPath = "src/main/images/item_" + itemId + ".png";
-
-                    // Get the selected image
                     ImageIcon icon = (ImageIcon) imagePreviewLabel.getIcon();
-                    Image image = icon.getImage();
-
-                    // Save the image to the destination path
                     BufferedImage bufferedImage = new BufferedImage(
-                            image.getWidth(null),
-                            image.getHeight(null),
-                            BufferedImage.TYPE_INT_ARGB
-                    );
+                            icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
                     Graphics2D g2 = bufferedImage.createGraphics();
-                    g2.drawImage(image, 0, 0, null);
+                    icon.paintIcon(null, g2, 0, 0);
                     g2.dispose();
-
                     ImageIO.write(bufferedImage, "png", new File(destPath));
-
-                    // Update the ITEM_IMAGES map
                     ITEM_IMAGES.put(itemId, destPath);
                     updatedItem.put("imagePath", destPath);
                 } catch (Exception ex) {
@@ -771,9 +801,7 @@ public class AdminCatalogueGUI {
             }
 
             // Update the item in the database
-            ParseDatabase.editClothingItem((int) selectedItem.get("id"), updatedItem);
-
-            // Reload the items to show the updated one
+            ParseDatabase.editClothingItem(itemId, updatedItem);
             loadClothingItems(ParseDatabase.getClothingItems());
         }
     }

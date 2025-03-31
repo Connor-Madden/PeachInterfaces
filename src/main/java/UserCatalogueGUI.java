@@ -389,10 +389,7 @@ public class UserCatalogueGUI {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     // Pass the description file path to the full-screen viewer
-                    String descriptionFilePath = "src/main/descriptions/" + itemName + "Des.txt";
-
-                    System.out.println("Description file path: " + descriptionFilePath);
-
+                    String descriptionFilePath = "src/main/descriptions/item_" + item.get("id") + "_desc.txt";
                     ProductFullscreenViewer.openProductFullscreen(item, imagePath, descriptionFilePath);
                 }
             });
@@ -410,7 +407,7 @@ public class UserCatalogueGUI {
             return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         }
 
-        int width = 26;
+        int width = 35;
         int height = 20;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = image.createGraphics();
@@ -442,17 +439,80 @@ public class UserCatalogueGUI {
 
     private void toggleFavorite(int itemId, JButton favoriteButton) {
         if ("Guest".equals(username)) return;
-        if (favorites.contains(itemId)) {
+
+        boolean wasFavorite = favorites.contains(itemId);
+
+        if (wasFavorite) {
             favorites.remove(itemId);
             favoriteButton.setIcon(new ImageIcon(createHeartIcon(false)));
+            saveFavorites();
+
+            if (isViewingFavorites()) {
+                // First check if this was the last favorite
+                if (favorites.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame,
+                            "You haven't added any items to favorites yet!",
+                            "Favorites",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    loadClothingItems(ParseDatabase.getClothingItems());
+                    updateFavoritesButtonToNormal();
+                } else {
+                    // Only refresh if there are still favorites left
+                    showFavorites(false); // Pass false to suppress duplicate dialog
+                }
+            }
         } else {
             favorites.add(itemId);
             favoriteButton.setIcon(new ImageIcon(createHeartIcon(true)));
+            saveFavorites();
         }
-        saveFavorites();
+    }
+    // Helper method to check if we're currently viewing favorites
+    private boolean isViewingFavorites() {
+        return favoritesButton != null && favoritesButton.getText().equals("Go Back");
     }
 
+
+    // Helper method to remove an item from the current view
+    private void removeFavoriteItemFromView(int itemId) {
+        for (Component comp : itemPanel.getComponents()) {
+            if (comp instanceof JPanel) {
+                JPanel panel = (JPanel) comp;
+                Integer panelItemId = (Integer) panel.getClientProperty("itemId");
+                if (panelItemId != null && panelItemId == itemId) {
+                    itemPanel.remove(panel);
+                    itemPanel.revalidate();
+                    itemPanel.repaint();
+                    break;
+                }
+            }
+        }
+    }
+
+    // Modified showFavorites with optional dialog suppression
     private void showFavorites() {
+        showFavorites(true); // Default behavior shows dialog
+    }
+
+    private void showFavorites(boolean showEmptyDialog) {
+        List<Map<String, Object>> currentFavorites = getCurrentFavorites();
+
+        if (currentFavorites.isEmpty()) {
+            if (showEmptyDialog) {
+                JOptionPane.showMessageDialog(frame,
+                        "You haven't added any items to favorites yet!",
+                        "Favorites",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
+            loadClothingItems(ParseDatabase.getClothingItems());
+            updateFavoritesButtonToNormal();
+        } else {
+            loadClothingItems(currentFavorites);
+            updateFavoritesButtonToGoBack();
+        }
+    }
+
+    private List<Map<String, Object>> getCurrentFavorites() {
         List<Map<String, Object>> allItems = ParseDatabase.getClothingItems();
         List<Map<String, Object>> favoriteItems = new ArrayList<>();
 
@@ -462,13 +522,29 @@ public class UserCatalogueGUI {
                 favoriteItems.add(item);
             }
         }
+        return favoriteItems;
+    }
 
-        if (favoriteItems.isEmpty()) {
-            JOptionPane.showMessageDialog(frame, "You haven't added any items to favorites yet!", "Favorites", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            loadClothingItems(favoriteItems);
-            JOptionPane.showMessageDialog(frame, "Showing your favorite items", "Favorites", JOptionPane.INFORMATION_MESSAGE);
+
+    private void updateFavoritesButtonToGoBack() {
+        favoritesButton.setText("Go Back");
+        // Clear existing listeners
+        for (ActionListener al : favoritesButton.getActionListeners()) {
+            favoritesButton.removeActionListener(al);
         }
+        favoritesButton.addActionListener(e -> {
+            loadClothingItems(ParseDatabase.getClothingItems());
+            updateFavoritesButtonToNormal();
+        });
+    }
+
+    private void updateFavoritesButtonToNormal() {
+        favoritesButton.setText("Favourites");
+        // Clear existing listeners
+        for (ActionListener al : favoritesButton.getActionListeners()) {
+            favoritesButton.removeActionListener(al);
+        }
+        favoritesButton.addActionListener(e -> showFavorites());
     }
 
     @SuppressWarnings("unchecked")

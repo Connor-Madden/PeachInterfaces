@@ -1,5 +1,3 @@
-// for testing (controller)
-
 import java.io.File;
 import java.util.*;
 
@@ -35,8 +33,8 @@ public class BackendTesting {
     int id = 2; // 2 with empty database
     ParseDatabase.editClothingItem(id, entry);
     ParseDatabase.printItems();
-    System.out.println();
-    System.out.println();
+    Testing.System.out.println();
+    Testing.System.out.println();
 
     ParseDatabase.removeClothingItem(2);
     ParseDatabase.printItems();
@@ -44,7 +42,7 @@ public class BackendTesting {
      */
 
     // test levenstein algorithm
-    // System.out.println("levenstein distance: " +
+    // Testing.System.out.println("levenstein distance: " +
     //                   ParseDatabase.levenstein("apple", "apple"));
 
     // test search function
