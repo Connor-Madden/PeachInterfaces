@@ -3,9 +3,12 @@ import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import javax.imageio.ImageIO;
+import java.io.File;
 import java.util.Map;
 
 public class ProductFullscreenViewer {
@@ -16,32 +19,52 @@ public class ProductFullscreenViewer {
         fullscreenFrame.getContentPane().setBackground(Color.WHITE);
         fullscreenFrame.setLayout(new BorderLayout());
 
-        // Load image (existing code remains the same)
-        ImageIcon fullImage = new ImageIcon(imagePath);
-        if (fullImage.getIconWidth() == -1) {
-            fullImage = new ImageIcon("src/main/images/Logo.png");
+        // Load Image
+        BufferedImage originalImage;
+        try {
+            originalImage = ImageIO.read(new File(imagePath));
+        } catch (IOException e) {
+            originalImage = null;
         }
 
-        // Scale image (existing code remains the same)
-        Image image = fullImage.getImage();
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        double scaleFactor = Math.min(
-                screenSize.getWidth() / image.getWidth(null),
-                screenSize.getHeight() / image.getHeight(null)
-        );
-        int scaledWidth = (int) (image.getWidth(null) * scaleFactor * 0.8);
-        int scaledHeight = (int) (image.getHeight(null) * scaleFactor * 0.8);
-        Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+        if (originalImage == null) {
+            try {
+                originalImage = ImageIO.read(new File("src/main/images/Logo.png")); // Fallback image
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
 
-        JLabel imageLabel = new JLabel(new ImageIcon(scaledImage));
+        // Scale Image (Preserving Aspect Ratio)
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int maxWidth = (int) (screenSize.getWidth() * 0.8);
+        int maxHeight = (int) (screenSize.getHeight() * 0.8);
+
+        double scaleFactor = Math.min(
+                (double) maxWidth / originalImage.getWidth(),
+                (double) maxHeight / originalImage.getHeight()
+        );
+
+        int scaledWidth = (int) (originalImage.getWidth() * scaleFactor);
+        int scaledHeight = (int) (originalImage.getHeight() * scaleFactor);
+
+        Image scaledImage = originalImage.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+        BufferedImage scaledBufferedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = scaledBufferedImage.createGraphics();
+        g2d.drawImage(scaledImage, 0, 0, null);
+        g2d.dispose();
+
+        // No sharpening applied, keeping it softer
+        JLabel imageLabel = new JLabel(new ImageIcon(scaledBufferedImage));
         imageLabel.setHorizontalAlignment(JLabel.CENTER);
         imageLabel.setVerticalAlignment(JLabel.CENTER);
 
-        // Create tabbed pane with proper hover effects
+        // Create Tabbed Pane with Hover Effects
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Custom UI for hover effects
+        // Custom UI for Hover Effects
         tabbedPane.setUI(new BasicTabbedPaneUI() {
             private int hoverIndex = -1;
 
@@ -73,11 +96,11 @@ public class ProductFullscreenViewer {
                                               int tabIndex, int x, int y,
                                               int w, int h, boolean isSelected) {
                 if (isSelected) {
-                    g.setColor(new Color(220, 230, 255)); // Selected tab color
+                    g.setColor(new Color(220, 230, 255)); // Selected Tab Color
                 } else if (tabIndex == hoverIndex) {
-                    g.setColor(new Color(210, 225, 255)); // Hover tab color
+                    g.setColor(new Color(210, 225, 255)); // Hover Tab Color
                 } else {
-                    g.setColor(new Color(245, 245, 245)); // Normal tab color
+                    g.setColor(new Color(245, 245, 245)); // Normal Tab Color
                 }
                 g.fillRect(x, y, w, h);
             }
@@ -91,7 +114,7 @@ public class ProductFullscreenViewer {
             }
         });
 
-        // Basic details tab (existing code remains the same)
+        // Basic Details Tab
         JPanel detailsPanel = new JPanel(new BorderLayout());
         detailsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -109,7 +132,7 @@ public class ProductFullscreenViewer {
         detailsPanel.add(detailsLabel, BorderLayout.CENTER);
         tabbedPane.addTab("Product Details", detailsPanel);
 
-        // Long description tab (existing code remains the same)
+        // Long Description Tab
         JPanel longDescPanel = new JPanel(new BorderLayout());
         JTextArea longDescArea = new JTextArea();
         longDescArea.setEditable(false);
@@ -129,44 +152,15 @@ public class ProductFullscreenViewer {
         longDescPanel.add(scrollPane, BorderLayout.CENTER);
         tabbedPane.addTab("Full Description", longDescPanel);
 
-        // Close button (existing code remains the same)
+        // Close Button
         JButton closeButton = new JButton("Close");
         closeButton.setFont(new Font("Arial", Font.BOLD, 16));
         closeButton.setBackground(new Color(220, 50, 50));
         closeButton.setForeground(Color.WHITE);
-        closeButton.setFocusPainted(false);
-        closeButton.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
-
-        closeButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                closeButton.setBackground(new Color(180, 30, 30));
-                closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                closeButton.setBackground(new Color(220, 50, 50));
-                closeButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
-
         closeButton.addActionListener(e -> fullscreenFrame.dispose());
-
-        closeButton.getModel().addChangeListener(e -> {
-            ButtonModel model = (ButtonModel) e.getSource();
-            if (model.isPressed()) {
-                closeButton.setBackground(new Color(150, 20, 20));
-            } else if (model.isRollover()) {
-                closeButton.setBackground(new Color(180, 30, 30));
-            } else {
-                closeButton.setBackground(new Color(220, 50, 50));
-            }
-        });
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         buttonPanel.add(closeButton);
 
         fullscreenFrame.add(imageLabel, BorderLayout.CENTER);
