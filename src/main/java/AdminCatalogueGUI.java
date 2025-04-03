@@ -1,15 +1,14 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 public class AdminCatalogueGUI {
     private JFrame frame;
@@ -30,16 +29,43 @@ public class AdminCatalogueGUI {
     private Color selectedPanelBorderColor = new Color(0, 0, 255);
     private Map<String, Object> selectedItem = null;
     private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
-
+    private static final String IMAGE_MAP_FILE = "src/main/data/item_images.dat";
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
     static {
-        ITEM_IMAGES.put(1, "src/main/images/Dress.png");
-        ITEM_IMAGES.put(2, "src/main/images/Roots.png");
-        ITEM_IMAGES.put(3, "src/main/images/Merrell.png");
-        ITEM_IMAGES.put(4, "src/main/images/Jeans.png");
-        ITEM_IMAGES.put(5, "src/main/images/Bracelet.png");
-        ITEM_IMAGES.put(6, "src/main/images/Puma.png");
-        ITEM_IMAGES.put(7, "src/main/images/Wallet.png");
+        ITEM_IMAGES.put(1, "src/main/images/item_1.png");
+        ITEM_IMAGES.put(2, "src/main/images/item_2.png");
+        ITEM_IMAGES.put(3, "src/main/images/item_3.png");
+        ITEM_IMAGES.put(4, "src/main/images/item_4.png");
+        ITEM_IMAGES.put(5, "src/main/images/item_5.png");
+        ITEM_IMAGES.put(6, "src/main/images/item_6.png");
+        ITEM_IMAGES.put(7, "src/main/images/item_7.png");
+        ITEM_IMAGES.put(8, "src/main/images/item_8.png");
+    }
+
+    private static void saveImageMap() {
+        try {
+            Files.createDirectories(Paths.get("src/main/data"));
+            try (ObjectOutputStream oos = new ObjectOutputStream(
+                    new FileOutputStream(IMAGE_MAP_FILE))) {
+                oos.writeObject(ITEM_IMAGES);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save image map: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void loadImageMap() {
+        File file = new File(IMAGE_MAP_FILE);
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(
+                    new FileInputStream(file))) {
+                Map<Integer, String> loadedMap = (Map<Integer, String>) ois.readObject();
+                ITEM_IMAGES.putAll(loadedMap);
+            } catch (IOException | ClassNotFoundException e) {
+                System.err.println("Failed to load image map: " + e.getMessage());
+            }
+        }
     }
 
     public AdminCatalogueGUI(String username) {
@@ -261,6 +287,19 @@ public class AdminCatalogueGUI {
     private void loadClothingItems(List<Map<String, Object>> items) {
         itemPanel.removeAll();
 
+        // First, rebuild the ITEM_IMAGES map based on what exists in the database
+        ITEM_IMAGES.clear();
+        for (Map<String, Object> item : items) {
+            int id = (int) item.get("id");
+            String imagePath = "src/main/images/item_" + id + ".png";
+            if (Files.exists(Paths.get(imagePath))) {
+                ITEM_IMAGES.put(id, imagePath);
+            } else {
+                ITEM_IMAGES.put(id, "src/main/images/Logo.png");
+            }
+        }
+        saveImageMap();
+
         for (Map<String, Object> item : items) {
             JPanel panel = new JPanel();
             panel.setBackground(Color.WHITE);
@@ -336,6 +375,7 @@ public class AdminCatalogueGUI {
 
         itemPanel.revalidate();
         itemPanel.repaint();
+        scrollPane.getViewport().setViewPosition(new Point(0, 0));
     }
 
     private ImageIcon loadImage(String path) {
@@ -512,7 +552,7 @@ public class AdminCatalogueGUI {
         formPanel.add(sizeField, gbc);
 
         gbc.gridx = 0; gbc.gridy = 4;
-        formPanel.add(new JLabel("Description:"), gbc);
+        formPanel.add(new JLabel("Brief Description:"), gbc);
         gbc.gridx = 1;
         formPanel.add(descriptionField, gbc);
 
@@ -529,6 +569,19 @@ public class AdminCatalogueGUI {
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
 
         if (result == JOptionPane.OK_OPTION) {
+            // Find the smallest available ID by checking gaps
+            int newId = 1;
+            List<Integer> existingIds = new ArrayList<>(ITEM_IMAGES.keySet());
+            Collections.sort(existingIds);
+
+            for (int id : existingIds) {
+                if (id > newId) {
+                    // Found a gap, use this ID
+                    break;
+                }
+                newId = id + 1;
+            }
+
             // Create a new item map with all the entered data
             Map<String, String> newItem = new HashMap<>();
             newItem.put("name", nameField.getText());
@@ -536,27 +589,47 @@ public class AdminCatalogueGUI {
             newItem.put("itemType", (String) typeField.getSelectedItem());
             newItem.put("size", sizeField.getText());
             newItem.put("description", descriptionField.getText());
+            newItem.put("id", String.valueOf(newId));
 
             // Handle the image
-            int newId = ITEM_IMAGES.keySet().stream().max(Integer::compare).orElse(0) + 1;
+            String imagePath;
             if (imagePreviewLabel.getIcon() != null) {
                 try {
-                    String destPath = "src/main/images/item_" + newId + ".png";
+                    // Create the images directory if it doesn't exist
+                    Files.createDirectories(Paths.get("src/main/images"));
+
+                    // Generate the new filename based on the item ID
+                    String newImageName = "item_" + newId + ".png";
+                    imagePath = "src/main/images/" + newImageName;
+
+                    // Save the image with the new name
                     ImageIcon icon = (ImageIcon) imagePreviewLabel.getIcon();
                     BufferedImage bufferedImage = new BufferedImage(
                             icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
                     Graphics2D g2 = bufferedImage.createGraphics();
                     icon.paintIcon(null, g2, 0, 0);
                     g2.dispose();
-                    ImageIO.write(bufferedImage, "png", new File(destPath));
-                    ITEM_IMAGES.put(newId, destPath);
-                    newItem.put("imagePath", destPath);
+
+                    // Write the image to the new file
+                    ImageIO.write(bufferedImage, "png", new File(imagePath));
+
+                    // Update the ITEM_IMAGES map
+                    ITEM_IMAGES.put(newId, imagePath);
+                    saveImageMap();
+                    newItem.put("imagePath", imagePath);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, "Error saving image: " + ex.getMessage(),
                             "Image Error", JOptionPane.ERROR_MESSAGE);
+                    // Fall back to default image
+                    imagePath = "src/main/images/Logo.png";
+                    ITEM_IMAGES.put(newId, imagePath);
+                    newItem.put("imagePath", imagePath);
                 }
             } else {
-                newItem.put("imagePath", "src/main/images/Logo.png");
+                // Use default image if none was selected
+                imagePath = "src/main/images/Logo.png";
+                ITEM_IMAGES.put(newId, imagePath);
+                newItem.put("imagePath", imagePath);
             }
 
             // Save long description to file
@@ -571,9 +644,7 @@ public class AdminCatalogueGUI {
                         "File Error", JOptionPane.ERROR_MESSAGE);
             }
 
-            newItem.put("id", String.valueOf(newId));
-
-            // SINGLE database call to add the item
+            // Add the item to the database
             ParseDatabase.addClothingItem(newItem);
             loadClothingItems(ParseDatabase.getClothingItems());
         }
@@ -745,7 +816,7 @@ public class AdminCatalogueGUI {
         formPanel.add(sizeField, gbc);
 
         gbc.gridx = 0; gbc.gridy = 4;
-        formPanel.add(new JLabel("Description:"), gbc);
+        formPanel.add(new JLabel("Brief Description:"), gbc);
         gbc.gridx = 1;
         formPanel.add(descriptionField, gbc);
 
@@ -793,6 +864,7 @@ public class AdminCatalogueGUI {
                     g2.dispose();
                     ImageIO.write(bufferedImage, "png", new File(destPath));
                     ITEM_IMAGES.put(itemId, destPath);
+                    saveImageMap();
                     updatedItem.put("imagePath", destPath);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, "Error saving image: " + ex.getMessage(),
@@ -808,10 +880,12 @@ public class AdminCatalogueGUI {
 
     private void removeClothingItem() {
         if (selectedItem == null) {
-            JOptionPane.showMessageDialog(frame, "Please select an item to remove first.", "Remove Item", JOptionPane.WARNING_MESSAGE, clothingIcon);
+            JOptionPane.showMessageDialog(frame, "Please select an item to remove first.",
+                    "Remove Item", JOptionPane.WARNING_MESSAGE, clothingIcon);
             return;
         }
 
+        int itemId = (int) selectedItem.get("id");
         int confirm = JOptionPane.showConfirmDialog(frame,
                 "Are you sure you want to remove this item?",
                 "Confirm Removal",
@@ -820,7 +894,21 @@ public class AdminCatalogueGUI {
                 clothingIcon);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            ParseDatabase.removeClothingItem((int) selectedItem.get("id"));
+            // Remove from database
+            ParseDatabase.removeClothingItem(itemId);
+
+            // Remove from image map and save
+            ITEM_IMAGES.remove(itemId);
+            saveImageMap();
+
+            // Also delete the image file and description file
+            try {
+                Files.deleteIfExists(Paths.get("src/main/images/item_" + itemId + ".png"));
+                Files.deleteIfExists(Paths.get("src/main/descriptions/item_" + itemId + "_desc.txt"));
+            } catch (IOException e) {
+                System.err.println("Error deleting files: " + e.getMessage());
+            }
+
             loadClothingItems(ParseDatabase.getClothingItems());
         }
     }
@@ -884,6 +972,7 @@ public class AdminCatalogueGUI {
     }
 
     public static void main(String[] args) {
+        loadImageMap(); // Load saved image paths
         SwingUtilities.invokeLater(() -> new AdminCatalogueGUI("admin"));
         ParseDatabase.initializeDatabase();
         ParseDatabase.addGucciDress();

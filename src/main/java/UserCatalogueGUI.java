@@ -6,6 +6,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,19 +35,47 @@ public class UserCatalogueGUI {
     private Set<Integer> favorites = new HashSet<>();
     private RoundedButton favoritesButton;
     private static final String FAVORITES_DIR = "user_favorites/";
-
+    private static final String IMAGE_MAP_FILE = "src/main/data/item_images.dat";
     // Hardcoded mapping of item IDs to image paths
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
 
     static {
-        // Add item IDs and their corresponding image paths
-        ITEM_IMAGES.put(1, "src/main/images/Dress.png");
-        ITEM_IMAGES.put(2, "src/main/images/Roots.png");
-        ITEM_IMAGES.put(3, "src/main/images/Merrell.png");
-        ITEM_IMAGES.put(4, "src/main/images/Jeans.png");
-        ITEM_IMAGES.put(5, "src/main/images/Bracelet.png");
-        ITEM_IMAGES.put(6, "src/main/images/Puma.png");
-        ITEM_IMAGES.put(7, "src/main/images/Wallet.png");
+        ITEM_IMAGES.put(1, "src/main/images/item_1.png");
+        ITEM_IMAGES.put(2, "src/main/images/item_2.png");
+        ITEM_IMAGES.put(3, "src/main/images/item_3.png");
+        ITEM_IMAGES.put(4, "src/main/images/item_4.png");
+        ITEM_IMAGES.put(5, "src/main/images/item_5.png");
+        ITEM_IMAGES.put(6, "src/main/images/item_6.png");
+        ITEM_IMAGES.put(7, "src/main/images/item_7.png");
+        ITEM_IMAGES.put(8, "src/main/images/item_8.png");
+
+        // Load any additional saved images
+        loadImageMap();
+    }
+    private static void saveImageMap() {
+        try {
+            Files.createDirectories(Paths.get("src/main/data"));
+            try (ObjectOutputStream oos = new ObjectOutputStream(
+                    new FileOutputStream(IMAGE_MAP_FILE))) {
+                oos.writeObject(ITEM_IMAGES);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save image map: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void loadImageMap() {
+        File file = new File(IMAGE_MAP_FILE);
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(
+                    new FileInputStream(file))) {
+                Map<Integer, String> loadedMap = (Map<Integer, String>) ois.readObject();
+                ITEM_IMAGES.putAll(loadedMap);
+            } catch (IOException | ClassNotFoundException e) {
+                System.err.println("Failed to load image map: " + e.getMessage());
+            }
+        }
     }
 
     public UserCatalogueGUI(String username) {
@@ -308,6 +338,8 @@ public class UserCatalogueGUI {
     private void loadClothingItems(List<Map<String, Object>> items) {
         itemPanel.removeAll();
 
+        int displayedItemCount = items.size();
+
         for (Map<String, Object> item : items) {
             JPanel panel = new JPanel();
             panel.setBackground(Color.WHITE);
@@ -316,12 +348,20 @@ public class UserCatalogueGUI {
 
             int itemId = (int) item.get("id");
             String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
-            ImageIcon icon = loadImage(imagePath);
+            ImageIcon originalIcon = loadImage(imagePath);
+
+            // Adjust image size based on displayed item count
+            int imageWidth = displayedItemCount <= 2 ? 250 : 150; // Enlarged size for <= 2 items
+            int imageHeight = displayedItemCount <= 2 ? 350 : 200; // Enlarged size for <= 2 items
+
+            // Resize the image icon
+            Image scaledImage = getHighQualityScaledImage(originalIcon.getImage(), imageWidth, imageHeight);
+            ImageIcon icon = new ImageIcon(scaledImage);
 
             // Create a panel for the image (centered)
             JPanel imagePanel = new JPanel(new BorderLayout());
             imagePanel.setBackground(Color.WHITE);
-            imagePanel.setPreferredSize(new Dimension(150, 200)); // Fixed size for consistency
+            imagePanel.setPreferredSize(new Dimension(imageWidth, imageHeight)); // Dynamic size
 
             JLabel imageLabel = new JLabel(icon);
             imageLabel.setHorizontalAlignment(JLabel.CENTER); // Center the image
@@ -399,6 +439,52 @@ public class UserCatalogueGUI {
 
         itemPanel.revalidate();
         itemPanel.repaint();
+    }
+
+    private ImageIcon loadHighQualityImage(String path, int width, int height) {
+        try {
+            // Load the original image
+            Image originalImage = new ImageIcon(path).getImage();
+
+            // Create high-quality scaled instance
+            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = resizedImage.createGraphics();
+
+            // Set rendering hints for best quality
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+
+            // Draw the scaled image
+            g2d.drawImage(originalImage, 0, 0, width, height, null);
+            g2d.dispose();
+
+            return new ImageIcon(resizedImage);
+        } catch (Exception e) {
+            System.out.println("Image not found: " + path);
+            // Return default image with proper scaling
+            Image defaultImage = new ImageIcon("src/main/images/Logo.png").getImage();
+            BufferedImage resizedDefault = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = resizedDefault.createGraphics();
+            g2d.drawImage(defaultImage, 0, 0, width, height, null);
+            g2d.dispose();
+            return new ImageIcon(resizedDefault);
+        }
+    }
+
+    private Image getHighQualityScaledImage(Image source, int width, int height) {
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+
+        // Set high-quality rendering hints
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2d.drawImage(source, 0, 0, width, height, null);
+        g2d.dispose();
+        return resizedImage;
     }
 
     private Image createHeartIcon(boolean filled) {
@@ -767,6 +853,7 @@ public class UserCatalogueGUI {
 
 
     public static void main(String[] args) {
+        loadImageMap(); // Load saved images before starting
         String username = (args.length > 0) ? args[0] : "Guest";
         SwingUtilities.invokeLater(() -> new UserCatalogueGUI(username));
     }
