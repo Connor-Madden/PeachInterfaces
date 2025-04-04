@@ -11,6 +11,23 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.List;
 
+/**
+ * A graphical user interface for administrators to manage a fashion and clothing catalogue.
+ * Provides full CRUD (Create, Read, Update, Delete) functionality for clothing items,
+ * including image management and detailed item editing.
+ *
+ * Features include:
+ * - Adding new clothing items with images
+ * - Editing existing items with full detail modification
+ * - Removing items from the catalogue
+ * - Searching and filtering items
+ * - Image preview and management
+ *
+ * @version 3.0
+ * @see UserCatalogueGUI
+ * @see LogInPanel
+ * @since Java 23
+ */
 public class AdminCatalogueGUI {
     private JFrame frame;
     private JPanel itemPanel;
@@ -33,6 +50,11 @@ public class AdminCatalogueGUI {
     private static final String IMAGE_MAP_FILE = "src/main/data/item_images.dat";
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
     private File selectedImageFile; // Add this field to store the selected image file
+
+    /**
+     * Static initializer block that loads the item image mappings from file.
+     * Initializes default image paths for known items.
+     */
     static {
         ITEM_IMAGES.put(1, "src/main/images/item_1.png");
         ITEM_IMAGES.put(2, "src/main/images/item_2.png");
@@ -44,6 +66,10 @@ public class AdminCatalogueGUI {
         ITEM_IMAGES.put(8, "src/main/images/item_8.png");
     }
 
+    /**
+     * Saves the current image mappings to persistent storage.
+     * Creates necessary directories if they don't exist.
+     */
     private static void saveImageMap() {
         try {
             Files.createDirectories(Paths.get("src/main/data"));
@@ -56,6 +82,10 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Loads image mappings from persistent storage.
+     * Merges any saved mappings with the default ones.
+     */
     @SuppressWarnings("unchecked")
     private static void loadImageMap() {
         File file = new File(IMAGE_MAP_FILE);
@@ -70,6 +100,12 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Constructs a new AdminCatalogueGUI for the specified username.
+     * Initializes all UI components and loads the clothing items.
+     *
+     * @param username the username of the logged-in admin
+     */
     public AdminCatalogueGUI(String username) {
         frame = new JFrame("Admin - Fashion and Clothing Catalogue");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -257,6 +293,12 @@ public class AdminCatalogueGUI {
         frame.setVisible(true);
     }
 
+    /**
+     * Applies consistent styling to buttons with hover effects.
+     *
+     * @param button the button to style
+     * @param bgColor the background color for the button
+     */
     private void styleButton(JButton button, Color bgColor) {
         button.setFont(new Font("Arial", Font.BOLD, 14));
         button.setBackground(bgColor);
@@ -277,8 +319,13 @@ public class AdminCatalogueGUI {
         });
     }
 
-
-
+    /**
+     * Creates a darker version of the specified color.
+     *
+     * @param color the original color
+     * @param factor the darkening factor (0.0 to 1.0)
+     * @return the darkened color
+     */
     private Color darkenColor(Color color, float factor) {
         return new Color(
                 Math.max((int)(color.getRed() * factor), 0),
@@ -287,6 +334,12 @@ public class AdminCatalogueGUI {
         );
     }
 
+    /**
+     * Loads and displays clothing items in the catalogue view.
+     * Automatically handles image paths and quality adjustments.
+     *
+     * @param items the list of clothing items to display
+     */
     private void loadClothingItems(List<Map<String, Object>> items) {
         itemPanel.removeAll();
 
@@ -419,6 +472,14 @@ public class AdminCatalogueGUI {
         scrollPane.getViewport().setViewPosition(new Point(0, 0));
     }
 
+    /**
+     * Loads an image with enhanced quality settings for detailed viewing.
+     *
+     * @param path the path to the image file
+     * @param width the target width
+     * @param height the target height
+     * @return an ImageIcon with enhanced quality
+     */
     private ImageIcon loadEnhancedQualityImage(String path, int width, int height) {
         try {
             BufferedImage originalImage = ImageIO.read(new File(path));
@@ -453,6 +514,12 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Attempts to find an image file matching the specified item ID.
+     *
+     * @param id the item ID to search for
+     * @return the path to the matching image file, or null if not found
+     */
     private String findImageFileForId(int id) {
         File imagesDir = new File("src/main/images");
         if (!imagesDir.exists()) return null;
@@ -466,6 +533,12 @@ public class AdminCatalogueGUI {
         return null;
     }
 
+    /**
+     * Validates that an image path exists and is readable.
+     *
+     * @param path the path to validate
+     * @return true if the path is valid, false otherwise
+     */
     private boolean validateImagePath(String path) {
         if (path == null || path.trim().isEmpty()) {
             return false;
@@ -479,6 +552,14 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Loads and scales an image while maintaining aspect ratio.
+     *
+     * @param path the path to the image file
+     * @param width the target width
+     * @param height the target height
+     * @return a scaled ImageIcon
+     */
     private ImageIcon loadImage(String path, int width, int height) {
         try {
             Image originalImage = new ImageIcon(path).getImage();
@@ -511,6 +592,10 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Performs a search based on the current search field text.
+     * Handles both text searches and ID-based searches.
+     */
     private void performSearch() {
         String searchText = searchField.getText().trim();
         List<Map<String, Object>> results;
@@ -529,6 +614,10 @@ public class AdminCatalogueGUI {
         saveImageMap();
     }
 
+    /**
+     * Filters items based on the current dropdown selection.
+     * Updates the displayed items with filtered results.
+     */
     private void performFilter() {
         String selectedFilter = (String) filterDropdown.getSelectedItem();
         List<Map<String, Object>> results = ParseDatabase.getClothingItems();
@@ -544,6 +633,10 @@ public class AdminCatalogueGUI {
         saveImageMap();
     }
 
+    /**
+     * Shows a dialog for adding a new clothing item to the catalogue.
+     * Handles all item details including image selection.
+     */
     private void addClothingItem() {
         // Reset the selected image file when starting a new item
         selectedImageFile = null;
@@ -778,6 +871,10 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Shows a dialog for editing an existing clothing item.
+     * Allows modification of all item details including image.
+     */
     private void editClothingItem() {
         if (selectedItem == null) {
             JOptionPane.showMessageDialog(frame, "Please select an item to edit first.",
@@ -1025,6 +1122,10 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Removes the currently selected clothing item after confirmation.
+     * Deletes associated image and description files.
+     */
     private void removeClothingItem() {
         if (selectedItem == null) {
             JOptionPane.showMessageDialog(frame, "Please select an item to remove first.",
@@ -1060,6 +1161,9 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Exits the application after confirmation, returning to the login screen.
+     */
     private void exitApplication() {
         int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to log out?", "Log Out", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, clothingIcon);
         if (confirm == JOptionPane.YES_OPTION) {
@@ -1068,11 +1172,21 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Custom JButton implementation with rounded corners and hover effects.
+     */
     private static class RoundedButton extends JButton {
         private final Color bgColor;
         private final Color fgColor;
         private Color currentColor;
 
+        /**
+         * Creates a new RoundedButton with specified colors.
+         *
+         * @param text the button text
+         * @param bgColor the background color
+         * @param fgColor the foreground (text) color
+         */
         public RoundedButton(String text, Color bgColor, Color fgColor) {
             super(text);
             this.bgColor = bgColor;
@@ -1100,6 +1214,11 @@ public class AdminCatalogueGUI {
             });
         }
 
+        /**
+         * Custom painting for the rounded button appearance.
+         *
+         * @param g the Graphics context
+         */
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -1118,6 +1237,11 @@ public class AdminCatalogueGUI {
         }
     }
 
+    /**
+     * Main entry point for the AdminCatalogueGUI.
+     *
+     * @param args command line arguments (not used)
+     */
     public static void main(String[] args) {
         loadImageMap(); // Load saved image paths
         SwingUtilities.invokeLater(() -> new AdminCatalogueGUI("admin"));

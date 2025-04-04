@@ -4,6 +4,28 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A graphical user interface for user authentication in a fashion and clothing catalogue application.
+ * This class provides a login panel with various functionalities including:
+ * User login with username and password
+ * Account creation for new users
+ * Account removal for existing users
+ * Password recovery
+ * Guest access
+ * Admin and regular user differentiation
+ *
+ * The class maintains user credentials in a file and provides appropriate visual feedback
+ * for all user interactions. It features modern UI elements with hover effects and
+ * responsive design.
+ *
+ * After successful authentication, users are directed to either the admin or regular
+ * user interface based on their credentials.
+ *
+ * @version 3.0
+ * @see AdminCatalogueGUI
+ * @see UserCatalogueGUI
+ * @since Java 23
+ */
 public class LogInPanel {
     JFrame loginFrame;
     JTextField usernameField;
@@ -14,6 +36,18 @@ public class LogInPanel {
     private static final String CREDENTIALS_FILE = "user_credentials.dat";
     private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
 
+    /**
+     * Constructs a new LogInPanel with all necessary UI components and functionality.
+     * Initializes the user credentials database, creates the login frame with styled components,
+     * and sets up all action listeners for user interactions.
+     *
+     * The constructor performs the following operations:
+     * Loads existing user credentials from file
+     * Creates the main login frame with modern styling
+     * Sets up username and password fields with validation
+     * Configures all action buttons (login, create account, etc.)
+     * Implements password visibility toggle
+     */
     public LogInPanel() {
         // Load user credentials from file
         userCredentials = loadCredentials();
@@ -202,8 +236,13 @@ public class LogInPanel {
         loginFrame.setVisible(true);
     }
 
-
-
+    /**
+     * Creates a darker version of the given color by the specified factor.
+     *
+     * @param color the original color to darken
+     * @param factor the darkening factor (0.0 to 1.0)
+     * @return a new darkened color
+     */
     private Color darkenColor(Color color, double factor) {
         int r = (int) (color.getRed() * (1 - factor));
         int g = (int) (color.getGreen() * (1 - factor));
@@ -216,6 +255,11 @@ public class LogInPanel {
         );
     }
 
+    /**
+     * Displays a dialog for removing an existing user account.
+     * The dialog prompts for username and password verification before removal.
+     * Admin accounts cannot be removed through this dialog.
+     */
     private void showRemoveAccountDialog() {
         JDialog removeAccountDialog = new JDialog(loginFrame, "Remove Account", true);
         removeAccountDialog.setLayout(new GridBagLayout());
@@ -293,13 +337,29 @@ public class LogInPanel {
         removeAccountDialog.setVisible(true);
     }
 
+
+    /**
+     * Custom Icon implementation for styled checkbox appearance.
+     */
     private static class CheckBoxIcon implements Icon {
         private final boolean selected;
 
+        /**
+         * Creates a new CheckBoxIcon with the specified selection state.
+         *
+         * @param selected whether the checkbox should appear selected
+         */
         public CheckBoxIcon(boolean selected) {
             this.selected = selected;
         }
 
+         /** Paints the checkbox icon with custom styling.
+         *
+         * @param c the component being painted
+         * @param g the graphics context
+         * @param x the x coordinate of the icon
+         * @param y the y coordinate of the icon
+         */
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -323,17 +383,32 @@ public class LogInPanel {
             g2.dispose();
         }
 
+        /**
+         * Gets the width of the icon.
+         *
+         * @return the icon width in pixels
+         */
         @Override
         public int getIconWidth() {
             return 16;
         }
 
+        /**
+         * Gets the height of the icon.
+         *
+         * @return the icon height in pixels
+         */
         @Override
         public int getIconHeight() {
             return 16;
         }
     }
 
+    /**
+     * Displays a dialog for retrieving a forgotten password.
+     * The dialog prompts for username and displays the associated password if found.
+     * Admin password retrieval is handled differently for security.
+     */
     private void showForgotPasswordDialog() {
         JDialog forgotPasswordDialog = new JDialog(loginFrame, "Forgot Password", true);
         forgotPasswordDialog.setLayout(new GridBagLayout());
@@ -387,6 +462,13 @@ public class LogInPanel {
         forgotPasswordDialog.setVisible(true);
     }
 
+    /**
+     * Creates a styled button with consistent appearance and hover effects.
+     *
+     * @param text the button text
+     * @param bgColor the background color for the button
+     * @return a configured JButton with hover effects
+     */
     private JButton createStyledButton(String text, Color bgColor) {
         JButton button = new JButton(text);
         button.setBackground(bgColor);
@@ -411,6 +493,10 @@ public class LogInPanel {
         return button;
     }
 
+    /**
+     * Displays a dialog for creating a new user account.
+     * The dialog validates username availability and password matching before creation.
+     */
     private void showCreateAccountDialog() {
         JDialog createAccountDialog = new JDialog(loginFrame, "Create New Account", true);
         createAccountDialog.setLayout(new GridBagLayout());
@@ -487,6 +573,12 @@ public class LogInPanel {
         createAccountDialog.setVisible(true);
     }
 
+    /**
+     * Loads user credentials from the persistent storage file.
+     *
+     * @return a Map containing username-password pairs
+     * @throws RuntimeException if there's an error reading the credentials file
+     */
     @SuppressWarnings("unchecked")
     Map<String, String> loadCredentials() {
         File file = new File(CREDENTIALS_FILE);
@@ -502,6 +594,10 @@ public class LogInPanel {
         }
     }
 
+    /**
+     * Saves the current user credentials to persistent storage.
+     * Displays an error message if the operation fails.
+     */
     void saveCredentials() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CREDENTIALS_FILE))) {
             oos.writeObject(userCredentials);
@@ -510,6 +606,13 @@ public class LogInPanel {
         }
     }
 
+    /**
+     * Displays a success dialog after successful login and transitions to the appropriate catalogue interface.
+     *
+     * @param message the success message to display
+     * @param username the username of the logged-in user
+     * @param isAdmin flag indicating if the user has admin privileges
+     */
     private void showLoginDialog(String message, String username, boolean isAdmin) {
         JDialog dialog = new JDialog(loginFrame, "Login Successful", true);
         dialog.setLayout(new BorderLayout());
@@ -553,6 +656,10 @@ public class LogInPanel {
         dialog.setVisible(true);
     }
 
+    /**
+     * Displays a dialog for guest users and transitions to the user catalogue interface.
+     * Guest users have limited functionality compared to registered users.
+     */
     private void showGuestLoginDialog() {
         JDialog dialog = new JDialog(loginFrame, "Guest Access", true);
         dialog.setLayout(new BorderLayout());
@@ -593,6 +700,12 @@ public class LogInPanel {
         dialog.setVisible(true);
     }
 
+    /**
+     * The entry point for the login application. Creates and shows the login panel
+     * on the Event Dispatch Thread to ensure thread safety.
+     *
+     * @param args command line arguments (not used)
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(LogInPanel::new);
     }

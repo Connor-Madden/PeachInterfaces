@@ -7,8 +7,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,8 +14,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-
-// User Catalog Class
+/**
+ * A graphical user interface for browsing and interacting with a fashion and clothing catalogue.
+ * Provides functionality for both regular users and guests including browsing items with images,
+ * searching and filtering, managing favorites (for registered users), viewing items in fullscreen,
+ * and responsive design with quality-adjusted image loading.
+ *
+ * The interface features modern UI elements with hover effects, smooth animations, and adaptive
+ * image quality based on the number of displayed items.
+ *
+ * @version 3.0
+ * @see LogInPanel
+ * @see AdminCatalogueGUI
+ * @since Java 23
+ */
 public class UserCatalogueGUI {
     private JFrame frame;
     private JPanel itemPanel;
@@ -40,6 +50,10 @@ public class UserCatalogueGUI {
     // Hardcoded mapping of item IDs to image paths
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
 
+    /**
+     * Static initializer block that loads the item image mappings from file.
+     * Initializes the default image paths for known items.
+     */
     static {
         ITEM_IMAGES.put(1, "src/main/images/item_1.png");
         ITEM_IMAGES.put(2, "src/main/images/item_2.png");
@@ -53,18 +67,11 @@ public class UserCatalogueGUI {
         // Load any additional saved images
         loadImageMap();
     }
-    private static void saveImageMap() {
-        try {
-            Files.createDirectories(Paths.get("src/main/data"));
-            try (ObjectOutputStream oos = new ObjectOutputStream(
-                    new FileOutputStream(IMAGE_MAP_FILE))) {
-                oos.writeObject(ITEM_IMAGES);
-            }
-        } catch (IOException e) {
-            System.err.println("Failed to save image map: " + e.getMessage());
-        }
-    }
 
+    /**
+     * Loads image mappings from persistent storage.
+     * Merges any saved mappings with the default ones.
+     */
     @SuppressWarnings("unchecked")
     private static void loadImageMap() {
         File file = new File(IMAGE_MAP_FILE);
@@ -79,6 +86,12 @@ public class UserCatalogueGUI {
         }
     }
 
+    /**
+     * Constructs a new UserCatalogueGUI for the specified username.
+     * Initializes all UI components and loads the clothing items.
+     *
+     * @param username the username of the logged-in user (or "Guest" for guest access)
+     */
     public UserCatalogueGUI(String username) {
         this.username = username;
         frame = new JFrame("User - Fashion and Clothing Catalogue");
@@ -337,6 +350,12 @@ public class UserCatalogueGUI {
         frame.setVisible(true);
     }
 
+    /**
+     * Loads and displays clothing items in the catalogue view.
+     * Automatically adjusts image quality based on the number of items displayed.
+     *
+     * @param items the list of clothing items to display (as maps of properties)
+     */
     private void loadClothingItems(List<Map<String, Object>> items) {
         itemPanel.removeAll();
 
@@ -447,6 +466,15 @@ public class UserCatalogueGUI {
         itemPanel.repaint();
     }
 
+    /**
+     * Loads an image with enhanced quality settings for detailed viewing.
+     * Uses high-quality scaling algorithms and maintains aspect ratio.
+     *
+     * @param path the path to the image file
+     * @param width the target width for scaling
+     * @param height the target height for scaling
+     * @return an ImageIcon with the enhanced quality image
+     */
     private ImageIcon loadEnhancedQualityImage(String path, int width, int height) {
         try {
             BufferedImage originalImage = ImageIO.read(new File(path));
@@ -481,7 +509,13 @@ public class UserCatalogueGUI {
         }
     }
 
-
+    /**
+     * Creates a heart icon for the favorites system.
+     * The icon appears filled if the item is a favorite, outline otherwise.
+     *
+     * @param filled whether the heart should appear filled
+     * @return a BufferedImage containing the heart icon
+     */
     private Image createHeartIcon(boolean filled) {
         if ("Guest".equals(username)) {
             // Return a transparent image for guests
@@ -518,6 +552,13 @@ public class UserCatalogueGUI {
         return image;
     }
 
+    /**
+     * Toggles an item's favorite status and updates the UI.
+     * Handles special cases for guest users and updates persistent storage.
+     *
+     * @param itemId the ID of the item to toggle
+     * @param favoriteButton the button associated with this item
+     */
     private void toggleFavorite(int itemId, JButton favoriteButton) {
         if ("Guest".equals(username)) return;
 
@@ -548,33 +589,28 @@ public class UserCatalogueGUI {
             saveFavorites();
         }
     }
-    // Helper method to check if we're currently viewing favorites
+
+    /**
+     * Checks if the current view is showing favorites.
+     *
+     * @return true if currently viewing favorites, false otherwise
+     */
     private boolean isViewingFavorites() {
         return favoritesButton != null && favoritesButton.getText().equals("Go Back");
     }
 
-
-    // Helper method to remove an item from the current view
-    private void removeFavoriteItemFromView(int itemId) {
-        for (Component comp : itemPanel.getComponents()) {
-            if (comp instanceof JPanel) {
-                JPanel panel = (JPanel) comp;
-                Integer panelItemId = (Integer) panel.getClientProperty("itemId");
-                if (panelItemId != null && panelItemId == itemId) {
-                    itemPanel.remove(panel);
-                    itemPanel.revalidate();
-                    itemPanel.repaint();
-                    break;
-                }
-            }
-        }
-    }
-
-    // Modified showFavorites with optional dialog suppression
+    /**
+     * Shows the user's favorite items (always shows empty dialog if applicable).
+     */
     private void showFavorites() {
         showFavorites(true); // Default behavior shows dialog
     }
 
+    /**
+     * Shows the user's favorite items or a message if none exist.
+     *
+     * @param showEmptyDialog whether to show a dialog when no favorites exist
+     */
     private void showFavorites(boolean showEmptyDialog) {
         List<Map<String, Object>> currentFavorites = getCurrentFavorites();
 
@@ -593,6 +629,11 @@ public class UserCatalogueGUI {
         }
     }
 
+    /**
+     * Gets the current list of favorite items with complete details.
+     *
+     * @return a list of maps containing favorite item data
+     */
     private List<Map<String, Object>> getCurrentFavorites() {
         List<Map<String, Object>> allItems = ParseDatabase.getClothingItems();
         List<Map<String, Object>> favoriteItems = new ArrayList<>();
@@ -606,7 +647,9 @@ public class UserCatalogueGUI {
         return favoriteItems;
     }
 
-
+    /**
+     * Updates the favorites button to "Go Back" state.
+     */
     private void updateFavoritesButtonToGoBack() {
         favoritesButton.setText("Go Back");
         // Clear existing listeners
@@ -619,6 +662,9 @@ public class UserCatalogueGUI {
         });
     }
 
+    /**
+     * Updates the favorites button to normal "Favorites" state.
+     */
     private void updateFavoritesButtonToNormal() {
         favoritesButton.setText("Favourites");
         // Clear existing listeners
@@ -628,6 +674,9 @@ public class UserCatalogueGUI {
         favoritesButton.addActionListener(e -> showFavorites());
     }
 
+    /**
+     * Loads the user's favorite items from persistent storage.
+     */
     @SuppressWarnings("unchecked")
     private void loadFavorites() {
         File file = new File(FAVORITES_DIR + username + ".dat");
@@ -643,6 +692,10 @@ public class UserCatalogueGUI {
         }
     }
 
+    /**
+     * Saves the user's favorite items to persistent storage.
+     * Creates the favorites directory if it doesn't exist.
+     */
     private void saveFavorites() {
         // Create directory if it doesn't exist
         File dir = new File(FAVORITES_DIR);
@@ -658,82 +711,15 @@ public class UserCatalogueGUI {
         }
     }
 
-
-
-    private void openProductFullscreen(Map<String, Object> item, String imagePath) {
-        JFrame fullscreenFrame = new JFrame();
-        fullscreenFrame.setUndecorated(true);
-        fullscreenFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        fullscreenFrame.getContentPane().setBackground(Color.WHITE);
-        fullscreenFrame.setLayout(new BorderLayout());
-
-        // Correctly resize the image maintaining the aspect ratio
-        ImageIcon fullImage = loadImage(imagePath, 1, 1); // Use the specific image path
-        if (fullImage.getIconWidth() == -1) {
-            fullImage = new ImageIcon("src/main/images/Logo.png"); // Default image
-        }
-
-        Image image = fullImage.getImage();
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        double screenWidth = screenSize.getWidth();
-        double screenHeight = screenSize.getHeight();
-        double imageWidth = image.getWidth(null);
-        double imageHeight = image.getHeight(null);
-
-// Calculate scaling factor to maintain aspect ratio
-        double scaleFactor = Math.min(screenWidth / imageWidth, screenHeight / imageHeight);
-        int scaledWidth = (int) (imageWidth * scaleFactor);
-        int scaledHeight = (int) (imageHeight * scaleFactor);
-
-// Resize the image to fit the screen while maintaining aspect ratio
-        Image scaledImage = image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(scaledImage);
-
-        JLabel imageLabel = new JLabel(scaledIcon);
-        imageLabel.setHorizontalAlignment(JLabel.CENTER);
-        imageLabel.setVerticalAlignment(JLabel.CENTER);
-
-        // Product details
-        JLabel detailsLabel = new JLabel("<html><h1>" + item.get("name") + "</h1>"
-                + "<p>Color: " + item.get("colour") + "</p>"
-                + "<p>Type: " + item.get("itemType") + "</p>"
-                + "<p>Size: " + item.get("size") + "</p>"
-                + "<p><i>" + item.get("description") + "</i></p></html>", JLabel.CENTER);
-        detailsLabel.setFont(new Font("Arial", Font.PLAIN, 20));
-
-        // Panel to center image
-        JPanel imagePanel = new JPanel(new GridBagLayout());
-        imagePanel.setBackground(Color.WHITE);
-        imagePanel.add(imageLabel);
-
-        // Close button
-        JButton closeButton = new JButton("Close");
-        closeButton.setFont(new Font("Arial", Font.BOLD, 14));
-        closeButton.setBackground(new Color(255, 0, 0)); // Red-Orange
-        closeButton.setForeground(Color.WHITE);
-        closeButton.setFocusPainted(false);
-        closeButton.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15)); // Add padding
-
-        // Close button action
-        closeButton.addActionListener(e -> fullscreenFrame.dispose());
-
-        // Panel for the close button
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setBackground(Color.WHITE);
-        buttonPanel.add(closeButton);
-
-        // Add components to the frame
-        fullscreenFrame.add(imagePanel, BorderLayout.CENTER);
-        fullscreenFrame.add(detailsLabel, BorderLayout.SOUTH);
-        fullscreenFrame.add(buttonPanel, BorderLayout.NORTH);
-
-        fullscreenFrame.setVisible(true);
-        fullscreenFrame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize the frame
-        fullscreenFrame.setUndecorated(true); // Remove window decorations
-    }
-
-
-
+    /**
+     * Loads and scales an image while maintaining aspect ratio.
+     * Falls back to a default image if the specified image cannot be loaded.
+     *
+     * @param path the path to the image file
+     * @param width the target width for scaling
+     * @param height the target height for scaling
+     * @return a scaled ImageIcon
+     */
     private ImageIcon loadImage(String path, int width, int height) {
         try {
             Image originalImage = new ImageIcon(path).getImage();
@@ -766,17 +752,28 @@ public class UserCatalogueGUI {
         }
     }
 
+    /**
+     * Updates the item panel width when the window is resized.
+     */
     private void updateItemWidth() {
         itemPanel.revalidate();
         itemPanel.repaint();
     }
 
+    /**
+     * Performs a search based on the current search field text.
+     * Updates the displayed items with search results.
+     */
     private void performSearch() {
         String searchText = searchField.getText().trim();
         List<Map<String, Object>> results = ParseDatabase.searchItems(searchText);
         loadClothingItems(results);
     }
 
+    /**
+     * Filters items based on the current dropdown selection.
+     * Updates the displayed items with filtered results.
+     */
     private void performFilter() {
         String selectedFilter = (String) filterDropdown.getSelectedItem();
         if (selectedFilter != null && !selectedFilter.equals("All")) {
@@ -788,11 +785,21 @@ public class UserCatalogueGUI {
         }
     }
 
+    /**
+     * A custom JButton implementation with rounded corners and hover effects.
+     */
     private static class RoundedButton extends JButton {
         private final Color bgColor;
         private final Color fgColor;
         private Color currentColor;
 
+        /**
+         * Creates a new RoundedButton with specified colors.
+         *
+         * @param text the button text
+         * @param bgColor the background color
+         * @param fgColor the foreground (text) color
+         */
         public RoundedButton(String text, Color bgColor, Color fgColor) {
             super(text);
             this.bgColor = bgColor;
@@ -820,6 +827,11 @@ public class UserCatalogueGUI {
             });
         }
 
+        /**
+         * Custom painting for the rounded button appearance.
+         *
+         * @param g the Graphics context
+         */
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -838,8 +850,11 @@ public class UserCatalogueGUI {
         }
     }
 
-
-
+    /**
+     * The main entry point for the UserCatalogueGUI.
+     *
+     * @param args command line arguments (optional username as first argument)
+     */
     public static void main(String[] args) {
         loadImageMap(); // Load saved images before starting
         String username = (args.length > 0) ? args[0] : "Guest";
