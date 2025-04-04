@@ -11,7 +11,34 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.util.Map;
 
+/**
+ * A full-screen product viewer that displays detailed information about clothing items.
+ * Provides a tabbed interface with product details and full description sections.
+ * Features include:
+ * - High-quality image display with proper aspect ratio scaling
+ * - Tabbed interface with hover effects
+ * - Detailed product information display
+ * - Full description text with scrolling
+ * - Clean close button with hover states
+ *
+ * @version 3.0
+ * @see UserCatalogueGUI
+ * @see AdminCatalogueGUI
+ * @since Java 23
+ */
 public class ProductFullscreenViewer {
+
+    /**
+     * Opens a full-screen window displaying detailed product information.
+     * The window includes:
+     * - A scaled image of the product
+     * - Tabbed panels for basic details and full description
+     * - A close button to exit the view
+     *
+     * @param item the product data to display (contains name, color, type, size, description)
+     * @param imagePath the path to the product image file
+     * @param descriptionFilePath the path to the file containing the full description
+     */
     public static void openProductFullscreen(Map<String, Object> item, String imagePath, String descriptionFilePath) {
         JFrame fullscreenFrame = new JFrame();
         fullscreenFrame.setUndecorated(true);

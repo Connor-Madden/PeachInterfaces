@@ -1,12 +1,26 @@
 import java.sql.*;
 import java.util.*;
 
+/**
+ * a SQL database for managing clothing
+ *
+ * this class provides advanced search operations with the levenstein distance
+ * for search and filter functionality fuzzy matching
+ *
+ * the SQL table rows takes the form:
+ *  id, name, colour, itemType, size, description
+ */
 public class ParseDatabase {
   private static final String URL = "jdbc:sqlite:fashionDb.db";
-  // TODO: change hardcoded values: to use a single String array
   private static final String[] HashmapKeys = {
       "id", "name", "colour", "itemType", "size", "description"};
 
+  /**
+   * creates the database if it doesn't already exist
+   * resets the autoincrement counter if the table is empty
+   *
+   * @throws SQLException if there is an error accessing the database
+   */
   public static void initializeDatabase() {
     String createTableSQL = "CREATE TABLE IF NOT EXISTS ClothingItems ("
                             + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -42,6 +56,13 @@ public class ParseDatabase {
     }
   }
 
+  /**
+   * gets all clothing items from the database
+   *
+   * @return a list of maps where each map is a clothing item with the itemname
+   *     as the key
+   * @throws SQLException if there is an error accessing the database
+   */
   public static List<Map<String, Object>> getClothingItems() {
     List<Map<String, Object>> clothingList = new ArrayList<>();
     String selectQuery = "SELECT * FROM ClothingItems;";
@@ -69,10 +90,17 @@ public class ParseDatabase {
     return clothingList;
   }
 
-  // add a new piece of clothing to the database
-  // ADMIN FUNCTION
+  /**
+   * adds a new piece of clothing to the database
+   *
+   * this is an administrator function. only users with administrator
+   * permissions should be able to use this function
+   *
+   * @param newClothing a map of a clothing item with the keys:
+   *                    name, colour, itemType, size, description
+   * @throws SQLException if there is an error accessing the database
+   */
   public static void addClothingItem(Map<String, String> newClothing) {
-    // TODO: validate entered data before adding to database
 
     String insertSQL = "INSERT INTO ClothingItems (name, colour, itemType, "
                        + "size, description) VALUES (?, ?, ?, ?, ?)";
@@ -95,8 +123,17 @@ public class ParseDatabase {
     }
   }
 
-  // edits a new piece of clothing in the database
-  // ADMIN FUNCTION
+  /**
+   * updates an existing clothing item in the database
+   *
+   * this is an administrator function. only users with administrator
+   * permissions should be able to use this function
+   *
+   * @param id the id of the clothing item to update
+   * @param updatedClothing a map containing the updates to be applied to the
+   *     clothing item
+   * @throws SQLException if there is an error accessing the database
+   */
   public static void editClothingItem(int id,
                                       Map<String, String> updatedClothing) {
     String updateSQL = "UPDATE ClothingItems SET name = ?, colour = ?, "
@@ -123,8 +160,15 @@ public class ParseDatabase {
     }
   }
 
-  // removes a piece of clothing from the database
-  // ADMIN FUNCTION
+  /**
+   * removes an existing clothing item in the database
+   *
+   * this is an administrator function. only users with administrator
+   * permissions should be able to use this function
+   *
+   * @param id the id of the clothing item to be removed
+   * @throws SQLException if there is an error accessing the database
+   */
   public static void removeClothingItem(int id) {
     String checkSQL = "SELECT COUNT(*) FROM ClothingItems WHERE id = ?";
     String deleteSQL = "DELETE FROM ClothingItems WHERE id = ?";
@@ -158,6 +202,12 @@ public class ParseDatabase {
     }
   }
 
+  /**
+   * resets the auto-increment counter for the clothing items
+   *
+   * @param connection the active connection to the database
+   * @throws SQLException if there is an error accessing the database
+   */
   private static void resetAutoIncrement(Connection connection) {
     // Query to get the highest current ID value
     String maxIdQuery = "SELECT MAX(id) FROM ClothingItems";
@@ -182,9 +232,20 @@ public class ParseDatabase {
     }
   }
 
-  // Levenstein distance algorithm
-  // uses Levenstein's algorithm to give a number based on the number of
-  // operations needed to change a string into another
+  /**
+   * calculate the levenstein distance between 2 words
+   *
+   * the levenstein distance is the minimum number of operational differences
+   * between 2 words.
+   * an operational difference is a single digit(char) edit like:
+   *  insertions
+   *  deletions
+   *  substitutions
+   *
+   * @param word1 the first word to compare of type String
+   * @param word2 the second word to compare of type String
+   * @return the levenstein's distance between 2 words
+   */
   public static int levenstein(String word1, String word2) {
     // create the matrix to fill with number of operation needed to change the
     // substring of the string
@@ -213,10 +274,19 @@ public class ParseDatabase {
     return operations[word1.length()][word2.length()];
   }
 
-  // filter algorithm
-  // for searching:
-  //    pass a HashMap <String, Object>
-  //    put null/""/" " for a non-entered Object value
+  /**
+   * filters clothing items based on multiple criteria fuzzy matching
+   *
+   * levensteins distance is used for text fields:
+   *  name, colour, itemType, description
+   * exact matching is used for:
+   *  size, id
+   * @param filters a map of filter criteria where the keys the categories to
+   *     filter for
+   *                and the values are the terms to filter by
+   * @return a list of clothing items that matches the filter criteria
+   * @see #levenstein(String, String)
+   */
   public static List<Map<String, Object>>
   filterItems(Map<String, Object> filters) {
     List<Map<String, Object>> filtered = getClothingItems();
@@ -267,9 +337,16 @@ public class ParseDatabase {
     return filtered;
   }
 
-  // Search algorithm
-  // for searching:
-  //    pass a sentence: "red new dress"
+  /**
+   * searches for clothing items based on free text fuzzy matching
+   *
+   * searches across all text fields for levenstein distance fuzzy matching:
+   *  name, colour, itemType, description
+   *
+   * @param sentence a search query in the form of a sentence
+   * @return a list of clothing items that matches the search criteria
+   * @see #levenstein(String, String)
+   */
   public static List<Map<String, Object>> searchItems(String sentence) {
     List<Map<String, Object>> filtered = new ArrayList<>();
 
@@ -299,6 +376,13 @@ public class ParseDatabase {
     return filtered;
   }
 
+  /**
+   * searches for a clothing item by its exact id
+   *
+   * @param id the id of the clothing item to search for
+   * @return a list of the matching clothing items (empty if not found)
+   * @throws SQLException if there is an error accessing the database
+   */
   public static List<Map<String, Object>> searchItemsById(int id) {
     List<Map<String, Object>> results = new ArrayList<>();
     String selectQuery = "SELECT * FROM ClothingItems WHERE id = ?;";
@@ -322,15 +406,20 @@ public class ParseDatabase {
 
     } catch (SQLException error) {
       error.printStackTrace();
-      System.out.println("Error: a SQLException has occurred. (searchItemsById)");
+      System.out.println(
+          "Error: a SQLException has occurred. (searchItemsById)");
     }
     return results;
   }
 
   // TESTING FUNCTIONS #############################################//
 
-  // this is just for backend testing
-  // don't use this for functionality!!
+  /**
+   * prints all the clothing items in the database to console
+   *
+   * @NOTE: this method is intended for testing and should not be used in
+   * production
+   */
   public static void printItems() {
     List<Map<String, Object>> items = getClothingItems();
     if (!items.isEmpty()) {
@@ -345,8 +434,21 @@ public class ParseDatabase {
     }
   }
 
-  // adds a single gucci dress for testing
-  // don't use this for functionality!!
+  /**
+   * add a sample gucci dress to the database (for testing purposes)
+   *
+   * the item added takes the form:
+   *  id: 1
+   *  name: "Gucci Denim Mini Dress with Horsebit"
+   *  colour: "Blue"
+   *  type: "Dress
+   *  size: "M
+   *  description: "Denim mini dress with a detachable
+   *                leather belt featuring silver-toned Horsebit hardware."
+   *
+   * @NOTE: this method is intended for testing and should not be used in
+   * production
+   */
   public static void addGucciDress() {
     String checkForDuplicatesSQL =
         "SELECT COUNT(*) FROM ClothingItems WHERE name = ?";
