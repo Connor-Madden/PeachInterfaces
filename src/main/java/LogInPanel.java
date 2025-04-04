@@ -5,13 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LogInPanel {
-    private JFrame loginFrame;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
+    JFrame loginFrame;
+    JTextField usernameField;
+    JPasswordField passwordField;
     private JCheckBox showPasswordCheckbox;
     private Icon clothingIcon;
     private Map<String, String> userCredentials;
     private static final String CREDENTIALS_FILE = "user_credentials.dat";
+    private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
 
     public LogInPanel() {
         // Load user credentials from file
@@ -51,31 +52,70 @@ public class LogInPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Username field
+        // Username field with enhanced styling
         gbc.gridx = 0;
         gbc.gridy = 0;
         loginPanel.add(new JLabel("Username:"), gbc);
 
         gbc.gridx = 1;
         usernameField = new JTextField(15);
+        usernameField.setFont(modernFont);
+        usernameField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
         loginPanel.add(usernameField, gbc);
 
-        // Password field
+        // Password field with enhanced styling
         gbc.gridx = 0;
         gbc.gridy = 1;
         loginPanel.add(new JLabel("Password:"), gbc);
 
         gbc.gridx = 1;
         passwordField = new JPasswordField(15);
+        passwordField.setFont(modernFont);
+        passwordField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
         loginPanel.add(passwordField, gbc);
 
-        // Show password checkbox
+        /// Enhanced show password checkbox with modern styling
         gbc.gridx = 1;
         gbc.gridy = 2;
         showPasswordCheckbox = new JCheckBox("Show Password");
-        showPasswordCheckbox.addActionListener(e ->
-                passwordField.setEchoChar(showPasswordCheckbox.isSelected() ? '\0' : '*')
-        );
+        showPasswordCheckbox.setFont(new Font("Arial", Font.PLAIN, 12));
+        showPasswordCheckbox.setFocusPainted(false);
+        showPasswordCheckbox.setOpaque(false);  // Make the background transparent
+        showPasswordCheckbox.setBorderPainted(false);
+        showPasswordCheckbox.setContentAreaFilled(false);  // Remove the default checkbox background
+        showPasswordCheckbox.setForeground(new Color(70, 70, 70));  // Dark gray text
+
+
+// Create a custom checkbox icon
+        UIManager.put("CheckBox.icon", UIManager.getIcon("CheckBox.icon"));
+        showPasswordCheckbox.setIcon(new CheckBoxIcon(false));
+        showPasswordCheckbox.setSelectedIcon(new CheckBoxIcon(true));
+
+// Add hover effect
+        showPasswordCheckbox.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                showPasswordCheckbox.setForeground(new Color(30, 30, 30));
+                showPasswordCheckbox.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                showPasswordCheckbox.setForeground(new Color(70, 70, 70));
+                showPasswordCheckbox.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+
+        showPasswordCheckbox.addItemListener(e -> {
+            if (showPasswordCheckbox.isSelected()) {
+                passwordField.setEchoChar((char) 0); // Show password
+            } else {
+                passwordField.setEchoChar('•'); // Use bullet character
+            }
+        });
         loginPanel.add(showPasswordCheckbox, gbc);
 
         // Login, Create Account, Remove Account, Forgot Password, Guest, and Exit buttons panel
@@ -83,8 +123,9 @@ public class LogInPanel {
         gbc.gridy = 3;
         gbc.gridwidth = 2;
         JPanel buttonPanel = new JPanel(new GridLayout(3, 2, 10, 5));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        // Login button
+        // Login button with hover effect
         JButton loginButton = createStyledButton("Login", new Color(60, 179, 113));
         loginButton.addActionListener(e -> {
             String username = usernameField.getText();
@@ -104,26 +145,26 @@ public class LogInPanel {
             }
         });
 
-        // Create Account button
+        // Create Account button with hover effect
         JButton createAccountButton = createStyledButton("Create Account", new Color(70, 130, 180));
         createAccountButton.addActionListener(e -> showCreateAccountDialog());
 
-        // Remove Account button
+        // Remove Account button with hover effect
         JButton removeAccountButton = createStyledButton("Remove Account", new Color(220, 20, 60));
         removeAccountButton.addActionListener(e -> showRemoveAccountDialog());
 
-        // Forgot Password button (now in position 3)
+        // Forgot Password button with hover effect
         JButton forgotPasswordButton = createStyledButton("Forgot Password", new Color(218, 165, 32));
         forgotPasswordButton.addActionListener(e -> showForgotPasswordDialog());
 
-        // Guest button (now in position 4)
+        // Guest button with hover effect
         JButton guestButton = createStyledButton("Continue as Guest", new Color(100, 100, 100));
         guestButton.addActionListener(e -> {
             loginFrame.dispose();
-            showGuestLoginDialog(); // Show the guest-specific dialog
+            showGuestLoginDialog();
         });
 
-        // Exit button
+        // Exit button with hover effect
         JButton exitButton = createStyledButton("Exit", new Color(255, 69, 0));
         exitButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(
@@ -140,11 +181,11 @@ public class LogInPanel {
             }
         });
 
-        // Add buttons to panel in new order
+        // Add buttons to panel
         buttonPanel.add(loginButton);
         buttonPanel.add(createAccountButton);
         buttonPanel.add(removeAccountButton);
-        buttonPanel.add(forgotPasswordButton); // Now comes before Guest
+        buttonPanel.add(forgotPasswordButton);
         buttonPanel.add(guestButton);
         buttonPanel.add(exitButton);
 
@@ -159,6 +200,20 @@ public class LogInPanel {
 
         // Make the frame visible
         loginFrame.setVisible(true);
+    }
+
+
+
+    private Color darkenColor(Color color, double factor) {
+        int r = (int) (color.getRed() * (1 - factor));
+        int g = (int) (color.getGreen() * (1 - factor));
+        int b = (int) (color.getBlue() * (1 - factor));
+        return new Color(
+                Math.max(r, 0),
+                Math.max(g, 0),
+                Math.max(b, 0),
+                color.getAlpha()
+        );
     }
 
     private void showRemoveAccountDialog() {
@@ -238,6 +293,47 @@ public class LogInPanel {
         removeAccountDialog.setVisible(true);
     }
 
+    private static class CheckBoxIcon implements Icon {
+        private final boolean selected;
+
+        public CheckBoxIcon(boolean selected) {
+            this.selected = selected;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Draw the checkbox border
+            g2.setColor(new Color(80, 80, 80));
+            g2.drawRoundRect(x, y, 14, 14, 4, 4);
+
+            if (selected) {
+                // Draw the checkmark
+                g2.setColor(new Color(128, 0, 128));
+                g2.fillRoundRect(x, y, 14, 14, 4, 4);
+
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(2));
+                g2.drawLine(x + 3, y + 7, x + 6, y + 10);
+                g2.drawLine(x + 6, y + 10, x + 11, y + 3);
+            }
+
+            g2.dispose();
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 16;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 16;
+        }
+    }
+
     private void showForgotPasswordDialog() {
         JDialog forgotPasswordDialog = new JDialog(loginFrame, "Forgot Password", true);
         forgotPasswordDialog.setLayout(new GridBagLayout());
@@ -296,7 +392,22 @@ public class LogInPanel {
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
+        button.setBorderPainted(false);
         button.setFont(new Font("Arial", Font.BOLD, 12));
+        button.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
+
+        // Add hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(darkenColor(bgColor, 0.2));
+                button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor);
+                button.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+
         return button;
     }
 
@@ -377,7 +488,7 @@ public class LogInPanel {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, String> loadCredentials() {
+    Map<String, String> loadCredentials() {
         File file = new File(CREDENTIALS_FILE);
         if (!file.exists()) {
             return new HashMap<>();
@@ -391,7 +502,7 @@ public class LogInPanel {
         }
     }
 
-    private void saveCredentials() {
+    void saveCredentials() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CREDENTIALS_FILE))) {
             oos.writeObject(userCredentials);
         } catch (IOException e) {

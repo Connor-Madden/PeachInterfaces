@@ -1,3 +1,4 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
@@ -193,6 +194,7 @@ public class UserCatalogueGUI {
 
         // Increase scroll speed
         scrollPane.getVerticalScrollBar().setUnitIncrement(20); // Adjust scrolling speed
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(20);
         scrollPane.getVerticalScrollBar().setBlockIncrement(100); // Optional: Click-to-scroll speed
 
         frame.add(scrollPane, BorderLayout.CENTER);
@@ -339,6 +341,7 @@ public class UserCatalogueGUI {
         itemPanel.removeAll();
 
         int displayedItemCount = items.size();
+        boolean enhancedQualityMode = displayedItemCount <= 2;
 
         for (Map<String, Object> item : items) {
             JPanel panel = new JPanel();
@@ -348,23 +351,24 @@ public class UserCatalogueGUI {
 
             int itemId = (int) item.get("id");
             String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
-            ImageIcon originalIcon = loadImage(imagePath);
 
-            // Adjust image size based on displayed item count
-            int imageWidth = displayedItemCount <= 2 ? 250 : 150; // Enlarged size for <= 2 items
-            int imageHeight = displayedItemCount <= 2 ? 350 : 200; // Enlarged size for <= 2 items
+            // Load image with different quality settings
+            ImageIcon icon;
+            if (enhancedQualityMode) {
+                // Enhanced quality for 2 or fewer items
+                icon = loadEnhancedQualityImage(imagePath, 400, 500);
+            } else {
+                // Normal mode with slightly larger images
+                icon = loadImage(imagePath, 200, 300); // Increased from 300x400
+            }
 
-            // Resize the image icon
-            Image scaledImage = getHighQualityScaledImage(originalIcon.getImage(), imageWidth, imageHeight);
-            ImageIcon icon = new ImageIcon(scaledImage);
-
-            // Create a panel for the image (centered)
+            // Image panel (same size regardless of quality mode)
             JPanel imagePanel = new JPanel(new BorderLayout());
             imagePanel.setBackground(Color.WHITE);
-            imagePanel.setPreferredSize(new Dimension(imageWidth, imageHeight)); // Dynamic size
+            imagePanel.setPreferredSize(new Dimension(250, 350)); // Consistent panel size
 
             JLabel imageLabel = new JLabel(icon);
-            imageLabel.setHorizontalAlignment(JLabel.CENTER); // Center the image
+            imageLabel.setHorizontalAlignment(JLabel.CENTER);
             imageLabel.setVerticalAlignment(JLabel.CENTER);
             imagePanel.add(imageLabel, BorderLayout.CENTER);
 
@@ -385,22 +389,25 @@ public class UserCatalogueGUI {
                 imagePanel.add(buttonPanel, BorderLayout.NORTH);
             }
 
-            // Product name (centered) - matches admin layout but without ID
+            // Product name (centered)
             String itemName = (String) item.get("name");
             JLabel nameLabel = new JLabel(
                     "<html><div style='text-align: center;'>" +
-                            "<span style='font-size: medium; font-weight: bold; color: #333;'>" + itemName + "</span>" +
+                            "<span style='font-size: " + (enhancedQualityMode ? "large" : "medium") +
+                            "; font-weight: bold; color: #333;'>" + itemName + "</span>" +
                             "</div></html>",
                     JLabel.CENTER
             );
 
-            // Product details (centered) - same as admin layout
+            // Product details (centered)
             JLabel detailsLabel = new JLabel(
-                    "<html><div style='text-align: center; font-size: small; color: #555;'>" +
+                    "<html><div style='text-align: center; font-size: " +
+                            (enhancedQualityMode ? "medium" : "small") + "; color: #555;'>" +
                             "<p style='margin: 2px 0;'><b>Color:</b> " + item.get("colour") + "</p>" +
                             "<p style='margin: 2px 0;'><b>Type:</b> " + item.get("itemType") + "</p>" +
                             "<p style='margin: 2px 0;'><b>Size:</b> " + item.get("size") + "</p>" +
-                            "<p style='margin: 4px 0; font-style: italic; color: #777;'>" + item.get("description") + "</p>" +
+                            "<p style='margin: 4px 0; font-style: italic; color: #777;'>" +
+                            item.get("description") + "</p>" +
                             "</div></html>",
                     JLabel.CENTER
             );
@@ -428,7 +435,6 @@ public class UserCatalogueGUI {
 
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    // Pass the description file path to the full-screen viewer
                     String descriptionFilePath = "src/main/descriptions/item_" + item.get("id") + "_desc.txt";
                     ProductFullscreenViewer.openProductFullscreen(item, imagePath, descriptionFilePath);
                 }
@@ -441,51 +447,40 @@ public class UserCatalogueGUI {
         itemPanel.repaint();
     }
 
-    private ImageIcon loadHighQualityImage(String path, int width, int height) {
+    private ImageIcon loadEnhancedQualityImage(String path, int width, int height) {
         try {
-            // Load the original image
-            Image originalImage = new ImageIcon(path).getImage();
+            BufferedImage originalImage = ImageIO.read(new File(path));
+            if (originalImage == null) {
+                originalImage = ImageIO.read(new File("src/main/images/Logo.png"));
+            }
 
-            // Create high-quality scaled instance
-            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            double scaleFactor = Math.min(
+                    (double) width / originalImage.getWidth(),
+                    (double) height / originalImage.getHeight()
+            );
+
+            int scaledWidth = (int) (originalImage.getWidth() * scaleFactor);
+            int scaledHeight = (int) (originalImage.getHeight() * scaleFactor);
+
+            BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2d = resizedImage.createGraphics();
 
-            // Set rendering hints for best quality
+            // Enhanced quality settings
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
 
-            // Draw the scaled image
-            g2d.drawImage(originalImage, 0, 0, width, height, null);
+            g2d.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
             g2d.dispose();
 
             return new ImageIcon(resizedImage);
-        } catch (Exception e) {
-            System.out.println("Image not found: " + path);
-            // Return default image with proper scaling
-            Image defaultImage = new ImageIcon("src/main/images/Logo.png").getImage();
-            BufferedImage resizedDefault = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2d = resizedDefault.createGraphics();
-            g2d.drawImage(defaultImage, 0, 0, width, height, null);
-            g2d.dispose();
-            return new ImageIcon(resizedDefault);
+        } catch (IOException e) {
+            System.err.println("Error loading enhanced quality image: " + e.getMessage());
+            return new ImageIcon("src/main/images/Logo.png");
         }
     }
 
-    private Image getHighQualityScaledImage(Image source, int width, int height) {
-        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = resizedImage.createGraphics();
-
-        // Set high-quality rendering hints
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        g2d.drawImage(source, 0, 0, width, height, null);
-        g2d.dispose();
-        return resizedImage;
-    }
 
     private Image createHeartIcon(boolean filled) {
         if ("Guest".equals(username)) {
@@ -673,7 +668,7 @@ public class UserCatalogueGUI {
         fullscreenFrame.setLayout(new BorderLayout());
 
         // Correctly resize the image maintaining the aspect ratio
-        ImageIcon fullImage = loadImage(imagePath); // Use the specific image path
+        ImageIcon fullImage = loadImage(imagePath, 1, 1); // Use the specific image path
         if (fullImage.getIconWidth() == -1) {
             fullImage = new ImageIcon("src/main/images/Logo.png"); // Default image
         }
@@ -739,41 +734,34 @@ public class UserCatalogueGUI {
 
 
 
-    private ImageIcon loadImage(String path) {
+    private ImageIcon loadImage(String path, int width, int height) {
         try {
-            // Load the original image
             Image originalImage = new ImageIcon(path).getImage();
 
             // Calculate scaled dimensions maintaining aspect ratio
-            int targetWidth = 150;
-            int targetHeight = 200;
-
-            // Get original dimensions
             int originalWidth = originalImage.getWidth(null);
             int originalHeight = originalImage.getHeight(null);
 
-            // Calculate scaling factors
-            double widthRatio = (double) targetWidth / originalWidth;
-            double heightRatio = (double) targetHeight / originalHeight;
+            double widthRatio = (double) width / originalWidth;
+            double heightRatio = (double) height / originalHeight;
             double ratio = Math.min(widthRatio, heightRatio);
 
-            // Calculate new dimensions
             int scaledWidth = (int) (originalWidth * ratio);
             int scaledHeight = (int) (originalHeight * ratio);
 
-            // Create high-quality scaled instance
-            Image scaledImage = originalImage.getScaledInstance(
-                    scaledWidth,
-                    scaledHeight,
-                    Image.SCALE_SMOOTH);
+            // Create scaled instance with better quality
+            BufferedImage scaledImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = scaledImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2d.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
+            g2d.dispose();
 
             return new ImageIcon(scaledImage);
         } catch (Exception e) {
             System.out.println("Image not found: " + path);
-            // Return default image with proper scaling
             Image defaultImage = new ImageIcon("src/main/images/Logo.png")
                     .getImage()
-                    .getScaledInstance(150, 200, Image.SCALE_SMOOTH);
+                    .getScaledInstance(width, height, Image.SCALE_SMOOTH);
             return new ImageIcon(defaultImage);
         }
     }

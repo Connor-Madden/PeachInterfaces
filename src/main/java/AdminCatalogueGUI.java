@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class AdminCatalogueGUI {
     private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
     private static final String IMAGE_MAP_FILE = "src/main/data/item_images.dat";
     private static final Map<Integer, String> ITEM_IMAGES = new HashMap<>();
+    private File selectedImageFile; // Add this field to store the selected image file
     static {
         ITEM_IMAGES.put(1, "src/main/images/item_1.png");
         ITEM_IMAGES.put(2, "src/main/images/item_2.png");
@@ -153,6 +155,7 @@ public class AdminCatalogueGUI {
         scrollPane = new JScrollPane(itemPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(20);
         frame.add(scrollPane, BorderLayout.CENTER);
 
         // Bottom Panel
@@ -287,50 +290,88 @@ public class AdminCatalogueGUI {
     private void loadClothingItems(List<Map<String, Object>> items) {
         itemPanel.removeAll();
 
-        // First, rebuild the ITEM_IMAGES map based on what exists in the database
-        ITEM_IMAGES.clear();
+        // Create a temporary map to preserve existing valid paths
+        Map<Integer, String> newImageMap = new HashMap<>();
+
         for (Map<String, Object> item : items) {
             int id = (int) item.get("id");
-            String imagePath = "src/main/images/item_" + id + ".png";
-            if (Files.exists(Paths.get(imagePath))) {
-                ITEM_IMAGES.put(id, imagePath);
-            } else {
-                ITEM_IMAGES.put(id, "src/main/images/Logo.png");
+
+            // 1. Check if we already have a valid path for this ID
+            if (ITEM_IMAGES.containsKey(id)) {
+                String existingPath = ITEM_IMAGES.get(id);
+                if (validateImagePath(existingPath)) {
+                    newImageMap.put(id, existingPath);
+                    continue;
+                }
             }
+
+            // 2. Search for any matching image file
+            String foundPath = findImageFileForId(id);
+            if (foundPath != null) {
+                newImageMap.put(id, foundPath);
+                continue;
+            }
+
+            // 3. Fall back to default image
+            newImageMap.put(id, "src/main/images/Logo.png");
         }
+
+        // Atomic update of the image map
+        ITEM_IMAGES.clear();
+        ITEM_IMAGES.putAll(newImageMap);
         saveImageMap();
+
+        // Enhanced quality mode for 2 or fewer items
+        boolean enhancedQualityMode = items.size() <= 2;
 
         for (Map<String, Object> item : items) {
             JPanel panel = new JPanel();
             panel.setBackground(Color.WHITE);
-            panel.setBorder(BorderFactory.createLineBorder(new Color(224, 224, 224), 1));
+            panel.setBorder(BorderFactory.createLineBorder(defaultPanelBorderColor, 1));
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
             // Load image using item ID
             int itemId = (int) item.get("id");
             String imagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
-            ImageIcon icon = loadImage(imagePath);
+
+            // Load image with appropriate quality
+            ImageIcon icon;
+            if (enhancedQualityMode) {
+                icon = loadEnhancedQualityImage(imagePath, 400, 500);
+            } else {
+                icon = loadImage(imagePath, 200, 300);
+            }
+
+            // Image panel with consistent size
+            JPanel imagePanel = new JPanel(new BorderLayout());
+            imagePanel.setBackground(Color.WHITE);
+            imagePanel.setPreferredSize(new Dimension(250, 350));
 
             JLabel imageLabel = new JLabel(icon);
-            imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            imageLabel.setHorizontalAlignment(JLabel.CENTER);
+            imageLabel.setVerticalAlignment(JLabel.CENTER);
+            imagePanel.add(imageLabel, BorderLayout.CENTER);
 
-            // Item name with ID integrated (small gray text after the name)
+            // Item name with ID on the left (changed from previous version)
             String itemName = (String) item.get("name");
             JLabel nameLabel = new JLabel(
                     "<html><div style='text-align: center;'>" +
-                            "<span style='font-size: small; font-weight: bold; color: #666; margin-right: 6px;'>#" + itemId + "</span>" +
-                            "<span style='font-size: medium; font-weight: bold; color: #333;'>  " + itemName + "</span>" +
+                            "<span style='font-size: small; font-weight: bold; color: #666; margin-right: 6px;'>#" + itemId + "&nbsp;&nbsp;"  + "</span>" +
+                            "<span style='font-size: " + (enhancedQualityMode ? "large" : "medium") +
+                            "; font-weight: bold; color: #333;'>" + itemName + "</span>" +
                             "</div></html>",
                     JLabel.CENTER
             );
 
             // Item details with simplified formatting
             JLabel detailsLabel = new JLabel(
-                    "<html><div style='text-align: center; font-size: small; color: #555;'>" +
+                    "<html><div style='text-align: center; font-size: " +
+                            (enhancedQualityMode ? "medium" : "small") + "; color: #555;'>" +
                             "<p style='margin: 2px 0;'><b>Color:</b> " + item.get("colour") + "</p>" +
                             "<p style='margin: 2px 0;'><b>Type:</b> " + item.get("itemType") + "</p>" +
                             "<p style='margin: 2px 0;'><b>Size:</b> " + item.get("size") + "</p>" +
-                            "<p style='margin: 4px 0; font-style: italic; color: #777;'>" + item.get("description") + "</p>" +
+                            "<p style='margin: 4px 0; font-style: italic; color: #777;'>" +
+                            item.get("description") + "</p>" +
                             "</div></html>",
                     JLabel.CENTER
             );
@@ -338,7 +379,7 @@ public class AdminCatalogueGUI {
             nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             detailsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            panel.add(imageLabel);
+            panel.add(imagePanel);
             panel.add(Box.createVerticalStrut(5)); // Add spacing between image and text
             panel.add(nameLabel);
             panel.add(detailsLabel);
@@ -378,20 +419,96 @@ public class AdminCatalogueGUI {
         scrollPane.getViewport().setViewPosition(new Point(0, 0));
     }
 
-    private ImageIcon loadImage(String path) {
-        ImageIcon icon = null;
+    private ImageIcon loadEnhancedQualityImage(String path, int width, int height) {
         try {
-            icon = new ImageIcon(new ImageIcon(path).getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
+            BufferedImage originalImage = ImageIO.read(new File(path));
+            if (originalImage == null) {
+                originalImage = ImageIO.read(new File("src/main/images/Logo.png"));
+            }
+
+            double scaleFactor = Math.min(
+                    (double) width / originalImage.getWidth(),
+                    (double) height / originalImage.getHeight()
+            );
+
+            int scaledWidth = (int) (originalImage.getWidth() * scaleFactor);
+            int scaledHeight = (int) (originalImage.getHeight() * scaleFactor);
+
+            BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = resizedImage.createGraphics();
+
+            // Enhanced quality settings
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+
+            g2d.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
+            g2d.dispose();
+
+            return new ImageIcon(resizedImage);
+        } catch (IOException e) {
+            System.err.println("Error loading enhanced quality image: " + e.getMessage());
+            return new ImageIcon("src/main/images/Logo.png");
+        }
+    }
+
+    private String findImageFileForId(int id) {
+        File imagesDir = new File("src/main/images");
+        if (!imagesDir.exists()) return null;
+
+        // Look for files matching "item_<id>.*"
+        for (File file : imagesDir.listFiles()) {
+            if (file.isFile() && file.getName().matches("item_" + id + "\\..+")) {
+                return file.getAbsolutePath();
+            }
+        }
+        return null;
+    }
+
+    private boolean validateImagePath(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            File file = new File(path);
+            return file.exists() && !file.isDirectory() && file.canRead();
+        } catch (SecurityException e) {
+            System.err.println("Security exception when validating image path: " + path);
+            return false;
+        }
+    }
+
+    private ImageIcon loadImage(String path, int width, int height) {
+        try {
+            Image originalImage = new ImageIcon(path).getImage();
+
+            // Calculate scaled dimensions maintaining aspect ratio
+            int originalWidth = originalImage.getWidth(null);
+            int originalHeight = originalImage.getHeight(null);
+
+            double widthRatio = (double) width / originalWidth;
+            double heightRatio = (double) height / originalHeight;
+            double ratio = Math.min(widthRatio, heightRatio);
+
+            int scaledWidth = (int) (originalWidth * ratio);
+            int scaledHeight = (int) (originalHeight * ratio);
+
+            // Create scaled instance with better quality
+            BufferedImage scaledImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = scaledImage.createGraphics();
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g2d.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
+            g2d.dispose();
+
+            return new ImageIcon(scaledImage);
         } catch (Exception e) {
             System.out.println("Image not found: " + path);
+            Image defaultImage = new ImageIcon("src/main/images/Logo.png")
+                    .getImage()
+                    .getScaledInstance(width, height, Image.SCALE_SMOOTH);
+            return new ImageIcon(defaultImage);
         }
-
-        if (icon == null || icon.getIconWidth() == -1) {
-            icon = new ImageIcon(new ImageIcon("src/main/images/Logo.png")
-                    .getImage().getScaledInstance(150, 200, Image.SCALE_SMOOTH));
-        }
-
-        return icon;
     }
 
     private void performSearch() {
@@ -405,21 +522,32 @@ public class AdminCatalogueGUI {
             results = ParseDatabase.searchItems(searchText);
         }
 
+        // Preserve existing image paths while loading new results
+        Map<Integer, String> preservedPaths = new HashMap<>(ITEM_IMAGES);
         loadClothingItems(results);
+        ITEM_IMAGES.putAll(preservedPaths); // Restore any missing paths
+        saveImageMap();
     }
 
     private void performFilter() {
         String selectedFilter = (String) filterDropdown.getSelectedItem();
+        List<Map<String, Object>> results = ParseDatabase.getClothingItems();
+
         if (selectedFilter != null && !selectedFilter.equals("All")) {
-            List<Map<String, Object>> results = ParseDatabase.getClothingItems();
             results.removeIf(item -> !selectedFilter.equalsIgnoreCase((String) item.get("itemType")));
-            loadClothingItems(results);
-        } else {
-            loadClothingItems(ParseDatabase.getClothingItems());
         }
+
+        // Preserve existing image paths
+        Map<Integer, String> preservedPaths = new HashMap<>(ITEM_IMAGES);
+        loadClothingItems(results);
+        ITEM_IMAGES.putAll(preservedPaths); // Restore any missing paths
+        saveImageMap();
     }
 
     private void addClothingItem() {
+        // Reset the selected image file when starting a new item
+        selectedImageFile = null;
+
         JTextField nameField = new JTextField();
         JTextField colorField = new JTextField();
         String[] itemTypes = {"Mens Clothing", "Womens Clothing", "Jewelry", "Accessories", "Kids Clothing"};
@@ -487,12 +615,12 @@ public class AdminCatalogueGUI {
 
             int returnValue = fileChooser.showOpenDialog(frame);
             if (returnValue == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
+                selectedImageFile = fileChooser.getSelectedFile(); // Store the selected file
                 try {
-                    ImageIcon icon = new ImageIcon(selectedFile.getAbsolutePath());
+                    ImageIcon icon = new ImageIcon(selectedImageFile.getAbsolutePath());
                     Image image = icon.getImage();
 
-                    // Calculate scaled dimensions while maintaining aspect ratio
+                    // Calculate scaled dimensions for preview
                     int containerWidth = imageContainer.getWidth() - 20;
                     int containerHeight = imageContainer.getHeight() - 20;
 
@@ -511,6 +639,7 @@ public class AdminCatalogueGUI {
                             "Image Error", JOptionPane.ERROR_MESSAGE);
                     imagePreviewLabel.setIcon(null);
                     imagePreviewLabel.setText("Invalid image");
+                    selectedImageFile = null; // Reset if there's an error
                 }
             }
         });
@@ -592,28 +721,27 @@ public class AdminCatalogueGUI {
             newItem.put("id", String.valueOf(newId));
 
             // Handle the image
-            String imagePath;
-            if (imagePreviewLabel.getIcon() != null) {
+            if (selectedImageFile != null) {
                 try {
-                    // Create the images directory if it doesn't exist
+                    // Create images directory if needed
                     Files.createDirectories(Paths.get("src/main/images"));
 
-                    // Generate the new filename based on the item ID
-                    String newImageName = "item_" + newId + ".png";
-                    imagePath = "src/main/images/" + newImageName;
+                    // Generate new filename preserving extension
+                    String extension = "";
+                    String fileName = selectedImageFile.getName();
+                    int dotIndex = fileName.lastIndexOf('.');
+                    if (dotIndex > 0) {
+                        extension = fileName.substring(dotIndex);
+                    }
+                    String newImageName = "item_" + newId + extension;
+                    String imagePath = "src/main/images/" + newImageName;
 
-                    // Save the image with the new name
-                    ImageIcon icon = (ImageIcon) imagePreviewLabel.getIcon();
-                    BufferedImage bufferedImage = new BufferedImage(
-                            icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D g2 = bufferedImage.createGraphics();
-                    icon.paintIcon(null, g2, 0, 0);
-                    g2.dispose();
+                    // Copy the original file without modification
+                    Files.copy(selectedImageFile.toPath(),
+                            Paths.get(imagePath),
+                            StandardCopyOption.REPLACE_EXISTING);
 
-                    // Write the image to the new file
-                    ImageIO.write(bufferedImage, "png", new File(imagePath));
-
-                    // Update the ITEM_IMAGES map
+                    // Update the image map
                     ITEM_IMAGES.put(newId, imagePath);
                     saveImageMap();
                     newItem.put("imagePath", imagePath);
@@ -621,13 +749,13 @@ public class AdminCatalogueGUI {
                     JOptionPane.showMessageDialog(frame, "Error saving image: " + ex.getMessage(),
                             "Image Error", JOptionPane.ERROR_MESSAGE);
                     // Fall back to default image
-                    imagePath = "src/main/images/Logo.png";
+                    String imagePath = "src/main/images/Logo.png";
                     ITEM_IMAGES.put(newId, imagePath);
                     newItem.put("imagePath", imagePath);
                 }
             } else {
                 // Use default image if none was selected
-                imagePath = "src/main/images/Logo.png";
+                String imagePath = "src/main/images/Logo.png";
                 ITEM_IMAGES.put(newId, imagePath);
                 newItem.put("imagePath", imagePath);
             }
@@ -657,6 +785,9 @@ public class AdminCatalogueGUI {
             return;
         }
 
+        // Reset the selected image file when starting to edit
+        selectedImageFile = null;
+
         // Create input fields with current values
         JTextField nameField = new JTextField((String) selectedItem.get("name"));
         JTextField colorField = new JTextField((String) selectedItem.get("colour"));
@@ -674,6 +805,7 @@ public class AdminCatalogueGUI {
 
         // Load existing long description from file
         int itemId = (int) selectedItem.get("id");
+        String currentImagePath = ITEM_IMAGES.getOrDefault(itemId, "src/main/images/Logo.png");
         String descFilePath = "src/main/descriptions/item_" + itemId + "_desc.txt";
         try {
             if (Files.exists(Paths.get(descFilePath))) {
@@ -736,6 +868,7 @@ public class AdminCatalogueGUI {
         imagePreviewPanel.add(imageContainer, BorderLayout.CENTER);
         imagePreviewPanel.add(buttonPanel, BorderLayout.SOUTH);
 
+        // Image selection handler
         selectImageButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Select Item Image");
@@ -753,12 +886,12 @@ public class AdminCatalogueGUI {
 
             int returnValue = fileChooser.showOpenDialog(frame);
             if (returnValue == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
+                selectedImageFile = fileChooser.getSelectedFile();
                 try {
-                    ImageIcon icon = new ImageIcon(selectedFile.getAbsolutePath());
+                    ImageIcon icon = new ImageIcon(selectedImageFile.getAbsolutePath());
                     Image image = icon.getImage();
 
-                    // Calculate scaled dimensions while maintaining aspect ratio
+                    // Calculate scaled dimensions for preview
                     int containerWidth = imageContainer.getWidth() - 20;
                     int containerHeight = imageContainer.getHeight() - 20;
 
@@ -777,6 +910,7 @@ public class AdminCatalogueGUI {
                             "Image Error", JOptionPane.ERROR_MESSAGE);
                     imagePreviewLabel.setIcon(null);
                     imagePreviewLabel.setText("Invalid image");
+                    selectedImageFile = null;
                 }
             }
         });
@@ -853,23 +987,36 @@ public class AdminCatalogueGUI {
             }
 
             // Handle image update if changed
-            if (imagePreviewLabel.getIcon() != null) {
+            if (selectedImageFile != null) {
                 try {
-                    String destPath = "src/main/images/item_" + itemId + ".png";
-                    ImageIcon icon = (ImageIcon) imagePreviewLabel.getIcon();
-                    BufferedImage bufferedImage = new BufferedImage(
-                            icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-                    Graphics2D g2 = bufferedImage.createGraphics();
-                    icon.paintIcon(null, g2, 0, 0);
-                    g2.dispose();
-                    ImageIO.write(bufferedImage, "png", new File(destPath));
-                    ITEM_IMAGES.put(itemId, destPath);
+                    // Get the extension from the original file
+                    String extension = "";
+                    String fileName = selectedImageFile.getName();
+                    int dotIndex = fileName.lastIndexOf('.');
+                    if (dotIndex > 0) {
+                        extension = fileName.substring(dotIndex);
+                    }
+
+                    // Create the new filename
+                    String newImageName = "item_" + itemId + extension;
+                    String imagePath = "src/main/images/" + newImageName;
+
+                    // Copy the original file without modification
+                    Files.copy(selectedImageFile.toPath(),
+                            Paths.get(imagePath),
+                            StandardCopyOption.REPLACE_EXISTING);
+
+                    // Update the image map
+                    ITEM_IMAGES.put(itemId, imagePath);
                     saveImageMap();
-                    updatedItem.put("imagePath", destPath);
+                    updatedItem.put("imagePath", imagePath);
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, "Error saving image: " + ex.getMessage(),
                             "Image Error", JOptionPane.ERROR_MESSAGE);
                 }
+            } else {
+                // Keep the existing image if no new one was selected
+                updatedItem.put("imagePath", currentImagePath);
             }
 
             // Update the item in the database

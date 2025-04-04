@@ -152,12 +152,40 @@ public class ProductFullscreenViewer {
         longDescPanel.add(scrollPane, BorderLayout.CENTER);
         tabbedPane.addTab("Full Description", longDescPanel);
 
-        // Close Button
+        // Close button (existing code remains the same)
         JButton closeButton = new JButton("Close");
         closeButton.setFont(new Font("Arial", Font.BOLD, 16));
         closeButton.setBackground(new Color(220, 50, 50));
         closeButton.setForeground(Color.WHITE);
+        closeButton.setFocusPainted(false);
+        closeButton.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+
+        closeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                closeButton.setBackground(new Color(180, 30, 30));
+                closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                closeButton.setBackground(new Color(220, 50, 50));
+                closeButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+
         closeButton.addActionListener(e -> fullscreenFrame.dispose());
+
+        closeButton.getModel().addChangeListener(e -> {
+            ButtonModel model = (ButtonModel) e.getSource();
+            if (model.isPressed()) {
+                closeButton.setBackground(new Color(150, 20, 20));
+            } else if (model.isRollover()) {
+                closeButton.setBackground(new Color(180, 30, 30));
+            } else {
+                closeButton.setBackground(new Color(220, 50, 50));
+            }
+        });
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
