@@ -5,16 +5,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+
 import static org.junit.Assert.*;
 
-
-// The admin login works properly
-// Invalid logins are prevented
-// Users can create new accounts and store the id properly
-
+/**
+ * Unit tests for the LogInPanel class. These tests ensure that the login functionality
+ * works correctly, invalid logins are prevented, and users can successfully create new accounts.
+ */
 public class ShowLoginTest {
     private LogInPanel logInPanel;
 
+    /**
+     * Sets up the test environment by initializing the LogInPanel and ensuring
+     * the login frame is visible before each test.
+     */
     @Before
     public void setUp() {
         try {
@@ -27,8 +31,12 @@ public class ShowLoginTest {
         }
     }
 
+    /**
+     * Tests if the admin user can successfully log in with valid credentials.
+     * The test simulates entering the correct username and password, clicking
+     * the login button, and verifying that the login is successful.
+     */
     @Test
-    // checks if the admin user can sucessfully log in
     public void testAdminLoginSuccess() {
         SwingUtilities.invokeLater(() -> {
             logInPanel.usernameField.setText("admin");
@@ -39,12 +47,17 @@ public class ShowLoginTest {
 
             loginButton.doClick();
 
+            // Check if the username field still contains the correct admin username
             assertEquals("admin", logInPanel.usernameField.getText());
         });
     }
 
+    /**
+     * Tests that invalid login credentials prevent the user from logging in.
+     * The test simulates entering an incorrect username and password and
+     * verifies that the login does not proceed by ensuring the username is unchanged.
+     */
     @Test
-    // checks to see if the incorrect credentials allow logins
     public void testInvalidLogin() {
         SwingUtilities.invokeLater(() -> {
             logInPanel.usernameField.setText("invalidUser");
@@ -55,12 +68,18 @@ public class ShowLoginTest {
 
             loginButton.doClick();
 
+            // Ensure the username field is not set to the invalid username
             assertNotEquals("invalidUser", logInPanel.usernameField.getText());
         });
     }
 
+    /**
+     * Tests if a new user account can be created successfully.
+     * The test simulates clicking the "Create Account" button, entering a new username
+     * and password, saving the credentials, and verifying that the new account exists
+     * in the credentials storage.
+     */
     @Test
-    // checks if the account creation has been created
     public void testAccountCreation() {
         SwingUtilities.invokeLater(() -> {
             JButton createAccountButton = findButton(logInPanel.loginFrame, "Create Account");
@@ -78,6 +97,14 @@ public class ShowLoginTest {
         });
     }
 
+    /**
+     * Helper method to find a button with the specified text within a container.
+     * This method recursively searches for a button in the container and its subcomponents.
+     *
+     * @param container the container to search in
+     * @param text the text of the button to find
+     * @return the JButton if found, or null if not found
+     */
     private JButton findButton(Container container, String text) {
         for (Component c : container.getComponents()) {
             if (c instanceof JButton) {
