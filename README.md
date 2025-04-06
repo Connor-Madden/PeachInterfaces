@@ -67,7 +67,7 @@ These functionalities are implemented within a visually appealing and modernized
 
 Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.  
 
-![Login Page](LogInPanel.png)
+![Login Page](screenshots/LogInPanel.png)
 
 - **Admin Credentials**:  
   - **Username**: `admin`.  
@@ -86,7 +86,7 @@ Upon launching the application, you will first encounter the **Login Page**, whe
  
 To exit the application, simply click the **Exit** button (**Orange Button**).  
 
-![Admin Page](AdminCatalougeGUI.png)
+![Admin Page](screenshots/AdminCatalougeGUI.png)
 
 ### 🧑‍💼 Admin Privileges
 When logged in as an admin, you have access to the following features:  
@@ -100,7 +100,7 @@ When logged in as an admin, you have access to the following features:
 - **Filter** items in the catalogue to refine results (**Green Dropdown**).
 - **Log Out** and return to the login page (**Bright Red Button**).
 
-![User Page](UserCatalogueGUI.png)
+![User Page](screenshots/UserCatalogueGUI.png)
 
 ### 👤 User Privileges
 When logged in as a user, you have access to the following features:   

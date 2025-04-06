@@ -1,6 +1,9 @@
 AdminCatalogueGUI$4.class
+LogInPanel$4.class
+ProductFullscreenViewer$2.class
 UserCatalogueGUI$5.class
 UserCatalogueGUI$RoundedButton.class
+ProductFullscreenViewer$1$2.class
 LogInPanel.class
 AdminCatalogueGUI$7.class
 AdminCatalogueGUI$2.class
@@ -14,10 +17,14 @@ UserCatalogueGUI$6.class
 AdminCatalogueGUI$5.class
 AdminCatalogueGUI.class
 BackendTesting.class
+ShowLoginTest.class
 ShowFavouriteItemTest.class
+LogInPanel$CheckBoxIcon.class
 ProductFullscreenViewer$1.class
 UserCatalogueGUI$4.class
 AdminCatalogueGUI$RoundedButton.class
+LogInPanel$3.class
+ProductFullscreenViewer$1$1.class
 UserCatalogueGUI$RoundedButton$1.class
 UserCatalogueGUI.class
 AdminCatalogueGUI$3.class
@@ -27,6 +34,7 @@ UserCatalogueGUI$7.class
 UserDatabase.class
 ParseDatabaseTest.class
 AdminCatalogueGUI$RoundedButton$1.class
+UserDatabaseTest.class
 AdminCatalogueGUI$6.class
 UserCatalogueGUI$2.class
 FrontEndRough.class
