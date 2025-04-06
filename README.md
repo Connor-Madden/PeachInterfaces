@@ -86,7 +86,7 @@ Upon launching the application, you will first encounter the **Login Page**, whe
  
 To exit the application, simply click the **Exit** button (**Orange Button**).  
 
-![Admin Page](AdminCatalogueGUI.png)
+![Admin Page](AdminCatalougeGUI.png)
 
 ### 🧑‍💼 Admin Privileges
 When logged in as an admin, you have access to the following features:  
