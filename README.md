@@ -1,4 +1,4 @@
-# Peach Interfaces: Fashion & Clothing Catalogue Project
+# 🍑 Peach Interfaces: Fashion & Clothing Catalogue Project
 
 ## 📋 Overview
 This project is focused on cataloging fashion and clothing items. The application features a graphical user interface (GUI) built using JavaSwing/JavaFX, with database management handled through SQL and Java.
@@ -67,6 +67,8 @@ These functionalities are implemented within a visually appealing and modernized
 
 Upon launching the application, you will first encounter the **Login Page**, where you can enter a username and password.  
 
+[Login Page](LogInPanel.png)
+
 - **Admin Credentials**:  
   - **Username**: `admin`.  
   - **Password**: `adminpass`.
@@ -84,6 +86,8 @@ Upon launching the application, you will first encounter the **Login Page**, whe
  
 To exit the application, simply click the **Exit** button (**Orange Button**).  
 
+[Admin Page](AdminCatalogueGUI.png)
+
 ### 🧑‍💼 Admin Privileges
 When logged in as an admin, you have access to the following features:  
 - **Add** a clothing item and its attributes to the catalogue (**Blue Button**).
@@ -94,7 +98,9 @@ When logged in as an admin, you have access to the following features:
 - **Search** for items in the catalogue for better management.
   - *As an admin, you can search for items using their ID numbers*.
 - **Filter** items in the catalogue to refine results.
-- **Log Out** and return to the login page (**Bright Red Button**). 
+- **Log Out** and return to the login page (**Bright Red Button**).
+
+[User Page](UserCatalogueGUI.png)
 
 ### 👤 User Privileges
 When logged in as a user, you have access to the following features:   
