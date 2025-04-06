@@ -29,7 +29,7 @@ These functionalities are implemented within a visually appealing and modernized
 ## 🛠️ How to Build and Run the Application
 
 ### ✅ Prerequisites
-- Java Development Kit (JDK 11 or later): [Download JDK Version 11+](https://www.oracle.com/java/technologies/javase/jdk23-archive-downloads.html).
+- Java Development Kit (JDK 11 or later): [Download JDK Version 11+](https://www.oracle.com/ca-en/java/technologies/javase/jdk11-archive-downloads.html).
 - Apache Maven: [Download Apache Maven Project Tool](https://maven.apache.org/install.html).
 - Git: [Download Git Version Control System](https://git-scm.com/downloads).
 
@@ -47,7 +47,7 @@ These functionalities are implemented within a visually appealing and modernized
 5. **Build the Packaged Project With Maven**:
   ```mvn clean package```.
 
-6. The **.jar** executable file with all dependencies included will be located at ```target/fashion-catalogue-jar-with-dependencies.jar```
+6. The **.jar** executable file with all dependencies included will be located at ```target/fashion-catalogue-jar-with-dependencies.jar```.
 
 7. **Execute the Application**:
   ```java -jar target/fashion-catalogue-jar-with-dependencies.jar```.
@@ -95,17 +95,17 @@ When logged in as an admin, you have access to the following features:
 - **Edit** an existing clothing item and its attributes in the catalogue (**Yellow Button**).
   - *All newly added images must first be saved in a designated file directory that you have recorded or remembered*. 
 - **Remove** a clothing item and its attributes from the catalogue (**Crimson Red Button**).   
-- **Search** for items in the catalogue for better management.
+- **Search** for items in the catalogue for better management (**Green Button**).
   - *As an admin, you can search for items using their ID numbers*.
-- **Filter** items in the catalogue to refine results.
+- **Filter** items in the catalogue to refine results (**Green Dropdown**).
 - **Log Out** and return to the login page (**Bright Red Button**).
 
 ![User Page](UserCatalogueGUI.png)
 
 ### 👤 User Privileges
 When logged in as a user, you have access to the following features:   
-- **Search** for clothing items to find what you like.  
-- **Filter** items in the catalogue to narrow your selection.  
+- **Search** for clothing items to find what you like (**Green Button**).  
+- **Filter** items in the catalogue to narrow your selection (**Green Dropdown**).
 - **Browse and Scroll** images and brief descriptions of each item.
 - **Click** on an image to view it in fullscreen with a detailed description in separate tabs.  
 - **Favourite** items by clicking the heart icon in the top corner of each item.
