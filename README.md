@@ -47,9 +47,9 @@ These functionalities are implemented within a visually appealing and modernized
 5. **Build the Packaged Project With Maven**:
   ```mvn clean package```.
 
-6. The **.jar** executable file with all dependencies included will be located at ```target/fashion-catalogue-jar-with-dependencies.jar```.
+   - The **.jar** executable file with all dependencies included will be located at ```target/fashion-catalogue-jar-with-dependencies.jar```.
 
-7. **Execute the Application**:
+6. **Execute the Application**:
   ```java -jar target/fashion-catalogue-jar-with-dependencies.jar```.
 
 ### 👨🏼‍💻 Troubleshooting
