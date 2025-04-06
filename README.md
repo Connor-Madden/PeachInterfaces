@@ -1,4 +1,4 @@
-# 🍑 Peach Interfaces: Fashion & Clothing Catalogue Project
+# 🍑 Peach Interfaces: Fashion & Clothing Catalogue 
 
 ## 📋 Overview
 This project is focused on cataloging fashion and clothing items. The application features a graphical user interface (GUI) built using JavaSwing/JavaFX, with database management handled through SQL and Java.
