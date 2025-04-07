@@ -1,57 +1,81 @@
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
 import java.io.File;
 import java.util.*;
 
+/**
+ * Test class for ParseDatabase functionality.
+ * This class contains unit tests for various database operations including
+ * initialization, CRUD operations, filtering, and searching.
+ */
 public class ParseDatabaseTest {
-
-  public static void main(String[] args) {
-
-    testLevenstein();
-    System.out.println();
-
-    testInitializeDatabase();
-    System.out.println();
-
+  /**
+   * Sets up the test environment before each test case.
+   * Deletes any existing database file and initializes a new one with sample data.
+   */
+  @Before
+  public void setUp() {
+    // Reset the database before each test
+    BackendTesting.deleteDatabaseFile();
+    ParseDatabase.initializeDatabase();
     ParseDatabase.addGucciDress(); // add the gucci dress for testing
-
-    testGetClothingItems();
-    System.out.println();
-
-    testAddClothingItem();
-    System.out.println();
-
-    testEditClothingItem();
-    System.out.println();
-
-    testRemoveClothingItem();
-    System.out.println();
-
-    testFilterItems();
-    System.out.println();
-
-    testSearchItems();
-    System.out.println();
-
-    testResetAutoIncrement();
-    System.out.println();
   }
 
-  private static void testGetClothingItems() {
+  /**
+   * Cleans up after each test case if needed.
+   * Currently empty as no specific cleanup is required.
+   */
+  @After
+  public void tearDown() {
+    // Clean up after each test if needed
+  }
+
+  /**
+   * Tests the Levenshtein distance calculation.
+   * Verifies that the algorithm correctly calculates the edit distance between strings.
+   */
+  @Test
+  public void testLevenstein() {
+    Assert.assertEquals(0, ParseDatabase.levenstein("test", "test"));
+    Assert.assertEquals(1, ParseDatabase.levenstein("oest", "test"));
+    Assert.assertEquals(3, ParseDatabase.levenstein("teetin", "test"));
+  }
+
+  /**
+   * Tests database initialization.
+   * Verifies that the database file is created during initialization.
+   */
+  @Test
+  public void testInitializeDatabase() {
+    File file = new File("fashionDb.db");
+    assertTrue("Database file should exist after initialization", file.exists());
+  }
+
+  /**
+   * Tests retrieval of clothing items from the database.
+   * Verifies that the returned list is not empty and optionally prints items for visual verification.
+   */
+  @Test
+  public void testGetClothingItems() {
     List<Map<String, Object>> items = ParseDatabase.getClothingItems();
-    isEqual(items.isEmpty(), false, "getClothingItems1 (non-empty list)");
-    if (!items.isEmpty()) {
-      for (Map<String, Object> item : items) {
-        for (Map.Entry<String, Object> entry : item.entrySet()) {
-          System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
-        System.out.println("-------------------");
-      }
-    } else {
-      System.out.println("items not found");
-    }
+    assertFalse("Clothing items list should not be empty", items.isEmpty());
+
+    // Optional: Print items for visual verification
+    items.forEach(item -> {
+      item.forEach((key, value) -> System.out.println(key + ": " + value));
+      System.out.println("-------------------");
+    });
   }
 
-  private static void testAddClothingItem() {
-    // add a test item
+  /**
+   * Tests adding a new clothing item to the database.
+   * Verifies that the newly added item can be retrieved from the database.
+   */
+  @Test
+  public void testAddClothingItem() {
     Map<String, String> newClothing = new HashMap<>();
     newClothing.put("name", "New Dress");
     newClothing.put("colour", "Red");
@@ -60,19 +84,17 @@ public class ParseDatabaseTest {
     newClothing.put("description", "A new dress");
     ParseDatabase.addClothingItem(newClothing);
 
-    // check if the item was added
-    boolean found = false;
-    for (Map<String, Object> item : ParseDatabase.getClothingItems()) {
-      if (item.get("name").equals("New Dress")) {
-        found = true;
-        break;
-      }
-    }
-    isEqual(found, true, "addClothingItem (item added)");
+    boolean found = ParseDatabase.getClothingItems().stream()
+            .anyMatch(item -> item.get("name").equals("New Dress"));
+    assertTrue("New item should be found in the database", found);
   }
 
-  // updates the gucci dredd
-  private static void testEditClothingItem() {
+  /**
+   * Tests editing an existing clothing item in the database.
+   * Verifies that the updated item information is correctly stored.
+   */
+  @Test
+  public void testEditClothingItem() {
     Map<String, String> updatedClothing = new HashMap<>();
     updatedClothing.put("name", "Updated Dress");
     updatedClothing.put("colour", "Green");
@@ -81,93 +103,59 @@ public class ParseDatabaseTest {
     updatedClothing.put("description", "An updated dress");
     ParseDatabase.editClothingItem(1, updatedClothing);
 
-    // check if the item was edited
-    boolean found = false;
-    for (Map<String, Object> item : ParseDatabase.getClothingItems()) {
-      if (item.get("name").equals("Updated Dress")) {
-        found = true;
-        break;
-      }
-    }
-    isEqual(found, true, "editClothingItem (item updated)");
+    boolean found = ParseDatabase.getClothingItems().stream()
+            .anyMatch(item -> item.get("name").equals("Updated Dress"));
+    assertTrue("Updated item should be found in the database", found);
   }
 
-  // remove an item and then verify that its removed
-  private static void testRemoveClothingItem() {
+  /**
+   * Tests removal of a clothing item from the database.
+   * Verifies that the removed item is no longer present in the database.
+   */
+  @Test
+  public void testRemoveClothingItem() {
     ParseDatabase.removeClothingItem(1);
-    boolean found = false;
-    for (Map<String, Object> item : ParseDatabase.getClothingItems()) {
-      if (item.get("id").equals(1)) {
-        found = true;
-        break;
-      }
-    }
-    isEqual(found, false, "removeClothingItem (item removed)");
+    boolean found = ParseDatabase.getClothingItems().stream()
+            .anyMatch(item -> item.get("id").equals(1));
+    assertFalse("Removed item should not be found in the database", found);
   }
 
-  // check that filter is returns similar items
-  private static void testFilterItems() {
-    // remake the database file for cleaner testing
-    BackendTesting.deleteDatabaseFile();
-    ParseDatabase.initializeDatabase();
-    ParseDatabase.addGucciDress();
+  /**
+   * Tests filtering of clothing items with approximate matching.
+   * Verifies that items can be found despite typos in the filter criteria.
+   */
+  @Test
+  public void testFilterItems() {
     Map<String, Object> filters = new HashMap<>();
     filters.put("name", "guci");
     filters.put("colour", "bue");
-    boolean found = false;
-    for (Map<String, Object> item : ParseDatabase.filterItems(filters)) {
-      if (item.get("name").equals("Gucci Denim Mini Dress with Horsebit")) {
-        found = true;
-        break;
-      }
+
+    boolean found = ParseDatabase.filterItems(filters).stream()
+            .anyMatch(item -> item.get("name").equals("Gucci Denim Mini Dress with Horsebit"));
+    assertTrue("Filter should find the Gucci dress despite typos", found);
+  }
+
+  /**
+   * Tests searching for clothing items with approximate matching.
+   * Verifies that items can be found despite typos in the search query.
+   */
+  @Test
+  public void testSearchItems() {
+    boolean found = ParseDatabase.searchItems("xucci ble").stream()
+            .anyMatch(item -> item.get("name").equals("Gucci Denim Mini Dress with Horsebit"));
+    assertTrue("Search should find the Gucci dress despite typos", found);
+  }
+
+  /**
+   * Tests the auto-increment reset functionality.
+   * Verifies that the first item in the database has the correct ID.
+   */
+  @Test
+  public void testResetAutoIncrement() {
+    // This test might need adjustment based on your actual resetAutoIncrement implementation
+    List<Map<String, Object>> items = ParseDatabase.getClothingItems();
+    if (!items.isEmpty()) {
+      assertEquals("First item should have ID 1", 1, items.get(0).get("id"));
     }
-    isEqual(found, true, "filterItems (item filtered)");
-  }
-
-  // test that search is finding the desired items
-  private static void testSearchItems() {
-    boolean found = false;
-    for (Map<String, Object> item : ParseDatabase.searchItems("xucci ble")) {
-      if (item.get("name").equals("Gucci Denim Mini Dress with Horsebit")) {
-        found = true;
-        break;
-      }
-    }
-    isEqual(found, true, "searchItems (item searched)");
-  }
-
-  // tests whether the database initializes
-  private static void testInitializeDatabase() {
-    // delete the database file and see if its remade
-    BackendTesting.deleteDatabaseFile();
-    ParseDatabase.initializeDatabase();
-    try {
-      File file = new File("fashionDb.db");
-      if (!file.exists()) {
-        throw new Exception("failed to initializeDatabase");
-      }
-      System.out.println("initializeDatabase = true");
-    } catch (Exception error) {
-      System.out.println("initializeDatabase = false");
-    }
-  }
-
-  // test reset auto increment with visual chedck
-  private static void testResetAutoIncrement() {
-    ParseDatabase.printItems();
-    isEqual(ParseDatabase.getClothingItems().get(0).get("id"), 1,
-            "resetAutoIncrement (id incremented)");
-  }
-
-  // tests the levenstein function
-  private static void testLevenstein() {
-    isEqual(ParseDatabase.levenstein("test", "test"), 0, "levenstein1");
-    isEqual(ParseDatabase.levenstein("oest", "test"), 1, "levenstein2");
-    isEqual(ParseDatabase.levenstein("teetin", "test"), 3, "levenstein3");
-  }
-
-  // for testing whether a result matches its expected
-  private static void isEqual(Object result, Object expected, String testName) {
-    System.out.println(testName + " = " + result.equals(expected));
   }
 }
