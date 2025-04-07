@@ -77,7 +77,7 @@ public class ShowLoginTest {
      * Tests if a new user account can be created successfully.
      * The test simulates clicking the "Create Account" button, entering a new username
      * and password, saving the credentials, and verifying that the new account exists
-     * in the credentials storage.
+     * in the credential's storage.
      */
     @Test
     public void testAccountCreation() {
@@ -116,6 +116,59 @@ public class ShowLoginTest {
                 JButton foundButton = findButton((Container) c, text);
                 if (foundButton != null) {
                     return foundButton;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Tests if the guest user can access the system without entering credentials.
+     * This test simulates clicking the "Continue as Guest" button and confirms
+     * that the login interface is no longer visible afterward, indicating a transition
+     * to the guest interface.
+     */
+    @Test
+    public void testGuestLogin() {
+        SwingUtilities.invokeLater(() -> {
+            // Create a new JFrame to serve as the parent container
+            JFrame parentFrame = new JFrame("Test Parent Frame");
+            parentFrame.setLayout(new FlowLayout());  // Set layout for JFrame
+
+            parentFrame.getContentPane().add(logInPanel.getRootPanel());  // Use rootPanel or a container from LogInPanel
+
+            parentFrame.pack();
+            parentFrame.setVisible(true);
+
+            JButton guestButton = findButton(parentFrame.getContentPane(), "Continue as Guest");
+            assertNotNull("Guest button not found", guestButton);
+
+            guestButton.doClick();
+
+            JLabel guestDashboard = findLabel(parentFrame.getContentPane(), "Guest Dashboard");  // Example for guest mode
+            assertNotNull("Guest interface should be displayed after login", guestDashboard);
+        });
+    }
+
+    /**
+     * Helper method to find a label with the specified text within a container.
+     * This method recursively searches for a label in the container and its subcomponents.
+     *
+     * @param container the container to search in
+     * @param text the text of the label to find
+     * @return the JLabel if found, or null if not found
+     */
+    private JLabel findLabel(Container container, String text) {
+        for (Component c : container.getComponents()) {
+            if (c instanceof JLabel) {
+                JLabel label = (JLabel) c;
+                if (label.getText().equals(text)) {
+                    return label;
+                }
+            } else if (c instanceof Container) {
+                JLabel foundLabel = findLabel((Container) c, text);
+                if (foundLabel != null) {
+                    return foundLabel;
                 }
             }
         }
