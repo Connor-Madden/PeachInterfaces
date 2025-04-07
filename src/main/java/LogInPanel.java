@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +37,7 @@ public class LogInPanel {
     private Map<String, String> userCredentials;
     private static final String CREDENTIALS_FILE = "user_credentials.dat";
     private final Font modernFont = new Font("Segoe UI", Font.PLAIN, 14);
+    private Component rootPanel;
 
     /**
      * Constructs a new LogInPanel with all necessary UI components and functionality.
@@ -132,12 +135,12 @@ public class LogInPanel {
         showPasswordCheckbox.setSelectedIcon(new CheckBoxIcon(true));
 
 // Add hover effect
-        showPasswordCheckbox.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        showPasswordCheckbox.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 showPasswordCheckbox.setForeground(new Color(30, 30, 30));
                 showPasswordCheckbox.setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 showPasswordCheckbox.setForeground(new Color(70, 70, 70));
                 showPasswordCheckbox.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
@@ -337,6 +340,10 @@ public class LogInPanel {
         removeAccountDialog.setVisible(true);
     }
 
+    public Component getRootPanel() {
+        return rootPanel;
+    }
+
 
     /**
      * Custom Icon implementation for styled checkbox appearance.
@@ -479,12 +486,12 @@ public class LogInPanel {
         button.setBorder(BorderFactory.createEmptyBorder(8, 0, 8, 0));
 
         // Add hover effect
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 button.setBackground(darkenColor(bgColor, 0.2));
                 button.setCursor(new Cursor(Cursor.HAND_CURSOR));
             }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 button.setBackground(bgColor);
                 button.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
@@ -630,11 +637,11 @@ public class LogInPanel {
         continueButton.setFocusPainted(false);
         continueButton.setBorderPainted(false);
 
-        continueButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        continueButton.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 continueButton.setBackground(new Color(46, 139, 87));
             }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 continueButton.setBackground(new Color(60, 179, 113));
             }
         });
@@ -678,11 +685,11 @@ public class LogInPanel {
         continueButton.setFocusPainted(false);
         continueButton.setBorderPainted(false);
 
-        continueButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        continueButton.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 continueButton.setBackground(new Color(70, 70, 70));
             }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
+            public void mouseExited(MouseEvent evt) {
                 continueButton.setBackground(new Color(100, 100, 100));
             }
         });
