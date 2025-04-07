@@ -117,7 +117,9 @@ If you're still unsure how to use the fashion catalogue, check out the demo vide
 
 ## 🧪 How to Test the Application 
 
-To switch to the testing branch and test the backend code (as the GUI is tested through regular use of the application), run the following command(s) in the project directory:  ```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```. Additionally, the ```main``` branch contains all our **Unit Tests**, **System Tests**, and **Integration Tests** implemented using **JUnit**.  
+To switch to the testing branch and test the backend code (as the GUI is tested through regular use of the application), run the following command(s) in the project directory:  ```git checkout Backend-Iteration1``` or ```git checkout Backend-Iteration2```. Additionally, the ```main``` branch contains most of our **Unit Tests**, **System Tests**, and **Integration Tests** implemented using **JUnit**.  
+
+For a detailed overview of the various test suites we conducted, along with a comprehensive analysis, please refer to the final testing report here: [Peach Interfaces Test Report](https://docs.google.com/document/d/1Z0rpDgd1xr5Plarh0gSymEgDkspVKLN-eHPtx2OlTUA/edit?usp=sharing).
 
 ## 📊 Summary
 
